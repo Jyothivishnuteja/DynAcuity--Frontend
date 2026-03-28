@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visual Acuity Test | DynAcuity</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Outfit:wght@700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="../css/index.css">
+    <style>
+        .game-container {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: radial-gradient(circle at center, #1a1a2e 0%, var(--bg-dark) 100%);
+            padding: 2rem;
+        }
+
+        .optotype-box {
+            background: white;
+            color: black;
+            width: 200px;
+            height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Inter', sans-serif;
+            font-weight: 700;
+            border-radius: var(--radius-md);
+            margin-bottom: 3rem;
+            box-shadow: 0 0 50px rgba(255, 255, 255, 0.1);
+            transition: var(--transition-fast);
+        }
+
+        .input-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            max-width: 400px;
+            width: 100%;
+        }
+
+        .key-btn {
+            background: var(--surface-light);
+            border: 1px solid var(--glass-border);
+            color: white;
+            padding: 1rem;
+            border-radius: var(--radius-sm);
+            font-size: 1.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition-fast);
+        }
+
+        .key-btn:hover {
+            background: var(--primary-purple);
+            transform: scale(1.05);
+        }
+
+        .test-progress {
+            margin-top: 2rem;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .hover-scale {
+            transition: var(--transition-fast);
+        }
+
+        .hover-scale:hover {
+            transform: scale(1.05);
+            background: rgba(255, 255, 255, 0.1) !important;
+            border: 1px solid var(--primary-purple);
+        }
+
+        .glass-card {
+            background: var(--surface-light);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-md);
+            backdrop-filter: blur(10px);
+        }
+
+        #distanceAlert {
+            animation: pulse-red 2s infinite;
+        }
+
+        @keyframes pulse-red {
+            0% { box-shadow: 0 0 0 0 rgba(255, 68, 68, 0.4); }
+            70% { box-shadow: 0 0 0 20px rgba(255, 68, 68, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 68, 68, 0); }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="game-container animate-fade-in">
+        <header
+            style="position: fixed; top: 2rem; width: 100%; display: flex; align-items: center; justify-content: center; gap: 2rem;">
+            <a href="index.html"
+                style="color: #fff; text-decoration: none; position: absolute; left: 2rem; background: rgba(255,255,255,0.05); padding: 0.5rem 1rem; border-radius: 12px; font-size: 0.8rem;">←
+                Back</a>
+            <div style="text-align: center;">
+                <h1 style="font-size: 1.5rem; color: var(--primary-purple);"><span id="userName">User</span>'s Acuity
+                    Test</h1>
+                <p style="font-size: 0.8rem; color: var(--text-secondary);">Identify the character shown below</p>
+            </div>
+        </header>
+
+        <!-- Mode Selection Overlay -->
+        <div id="modeSelectionOverlay" class="glass"
+            style="position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 2500; padding: 2rem; text-align: center;">
+            <h2 style="font-size: 2.5rem; color: var(--primary-purple); margin-bottom: 2rem;">Choose Test Mode</h2>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; max-width: 600px; width: 100%;">
+                <div class="glass-card hover-scale" onclick="selectMode('manual')" style="cursor: pointer; padding: 2rem;">
+                    <span style="font-size: 3rem; margin-bottom: 1rem; display: block;">🖱️</span>
+                    <h3>Manual Mode</h3>
+                    <p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.5rem;">Use mouse or touch to select characters.</p>
+                </div>
+                <div class="glass-card hover-scale" onclick="selectMode('camera')" style="cursor: pointer; padding: 2rem;">
+                    <span style="font-size: 3rem; margin-bottom: 1rem; display: block;">📷</span>
+                    <h3>Camera Mode</h3>
+                    <p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.5rem;">Smart distance tracking & finger recognition.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Instructions Overlay -->
+        <div id="instructionsOverlay" class="glass"
+            style="position: fixed; inset: 0; display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 2000; padding: 2rem; text-align: center;">
+            <h2 style="font-size: 2rem; color: var(--primary-purple); margin-bottom: 1.5rem;">Visual Acuity Test</h2>
+            <p id="instructionText" style="color: var(--text-secondary); margin-bottom: 2rem; max-width: 500px;">
+                Identify the letters at your preferred testing distance.
+            </p>
+
+            <div class="glass-card" style="margin-bottom: 2rem; width: 100%; max-width: 500px; text-align: left;">
+                <h3 style="font-size: 1.2rem; margin-bottom: 1rem;">🏆 Scoring Guide (Metric)</h3>
+                <div style="font-size: 0.9rem; line-height: 1.8;">
+                    <p>• <b>6/6 (Normal):</b> 8.7 mm height <span
+                            style="color: var(--success-green); float: right;">Excellent</span></p>
+                    <p>• <b>6/12 - 6/18:</b> 17 mm - 26 mm height <span
+                            style="color: var(--accent-orange); float: right;">Average</span></p>
+                    <p>• <b>6/60:</b> 87 mm height (Top Letter) <span
+                            style="color: var(--error-red); float: right;">Consult Professional</span></p>
+                </div>
+            </div>
+
+            <button onclick="startTest()" class="btn btn-primary" style="padding: 1rem 3rem;">Start Test</button>
+        </div>
+
+        <!-- Camera Container -->
+        <div id="cameraContainer" style="display: none; position: fixed; top: 1rem; right: 1rem; width: 200px; height: 150px; border-radius: 12px; overflow: hidden; border: 2px solid var(--primary-purple); z-index: 500;">
+            <video id="video" style="width: 100%; height: 100%; object-fit: cover;" autoplay playsinline></video>
+            <canvas id="output_canvas" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></canvas>
+            <div id="distanceStatus" style="position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.7); color: white; font-size: 0.7rem; padding: 4px; text-align: center;">
+                Distance: --
+            </div>
+            <div id="fingerStatus" style="position: absolute; top: 0; left: 0; background: var(--primary-purple); color: white; font-size: 0.7rem; padding: 4px; border-bottom-right-radius: 8px;">
+                Fingers: 0
+            </div>
+        </div>
+
+        <!-- Alerts disabled -->
+        <div id="distanceAlert" style="display: none;"></div>
+
+        <div id="targetBox" class="optotype-box" style="display: none;">
+            <span id="targetChar" style="font-size: 60px;">E</span>
+        </div>
+
+        <div id="gestureProgressContainer" style="display: none; width: 300px; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; margin-bottom: 2rem; overflow: hidden;">
+            <div id="gestureProgressBar" style="width: 0%; height: 100%; background: var(--primary-purple); transition: width 0.1s linear;"></div>
+        </div>
+
+        <div id="inputGrid" class="input-grid" style="display: none;">
+            <button class="key-btn" onclick="checkInput('E')">E</button>
+            <button class="key-btn" onclick="checkInput('F')">F</button>
+            <button class="key-btn" onclick="checkInput('H')">H</button>
+            <button class="key-btn" onclick="checkInput('K')">K</button>
+            <button class="key-btn" onclick="checkInput('L')">L</button>
+            <button class="key-btn" onclick="checkInput('N')">N</button>
+            <button class="key-btn" onclick="checkInput('O')">O</button>
+            <button class="key-btn" onclick="checkInput('P')">P</button>
+        </div>
+
+        <div id="testProgress" class="test-progress" style="display: none;">
+            Letter <span id="currentCount">1</span> / 11
+        </div>
+
+        <div id="resultsOverlay" class="glass"
+            style="display: none; position: fixed; inset: 0; flex-direction: column; align-items: center; justify-content: center; z-index: 1000;">
+            <h2 id="resultStatus" style="font-size: 2.5rem; margin-bottom: 0.5rem;">Normal Vision</h2>
+            <div id="starContainer"></div>
+            <p style="font-size: 2rem; color: var(--primary-purple); margin-bottom: 1rem;">Acuity: <span
+                    id="finalScore">6/6</span></p>
+            <p id="resultDesc"
+                style="color: var(--text-secondary); margin-bottom: 2rem; max-width: 400px; text-align: center;">Your
+                visual acuity is excellent.</p>
+            
+            <div style="font-size: 0.8rem; font-weight: 800; color: #a1a1aa; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 0.5rem; text-align: left;">Performance Dataset (db.sqlite)</div>
+            <div id="historyTableContainer" style="width: 100%; max-width: 400px; margin-bottom: 2rem;"></div>
+
+            <button onclick="window.location.href='../dashboard.html'" class="btn btn-primary"
+                style="width: 250px; margin-bottom: 1rem;">Dashboard</button>
+            <a href="../progress.html"
+                style="color: var(--primary-purple); text-decoration: none; font-weight: 600; font-size: 0.9rem;">View
+                Detailed Results →</a>
+        </div>
+    </div>
+
+    <!-- MediaPipe Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="../js/auth.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const user = JSON.parse(localStorage.getItem('dynacuity_user'));
+            if (user && user.full_name) {
+                document.getElementById('userName').innerText = user.full_name;
+            }
+        });
+
+        // 11 Levels as per Android App with corresponding heights/sizes
+        const notations = ["6/30", "6/24", "6/19", "6/15", "6/12", "6/9.5", "6/7.5", "6/6", "6/4.8", "6/3.8", "6/3"];
+        const sizes = [160, 130, 110, 90, 70, 55, 45, 35, 25, 18, 12]; // Adjusted based on Android SP values
+        const chars = ["A", "B", "C", "D", "E", "F", "H", "K", "L", "M", "N", "O", "P", "R", "S", "T", "U", "V", "Z"];
+
+        let currentIndex = 0;
+        let correctAnswers = 0;
+        let currentTarget = "";
+        let currentOptions = [];
+        let testMode = 'manual';
+        let cameraActive = false;
+        let faceMesh, hands, camera;
+        let lastDistance = 0;
+        let currentFingers = 0;
+        let isDistanceValid = true;
+        let gestureTimer = null;
+        let gestureConfirmTime = 2000; // 2 seconds to confirm
+        let lastGestureFingers = 0;
+        let isProcessingGesture = false;
+
+        let levelStartTime = 0;
+        let totalReactionTime = 0;
+
+        const videoElement = document.getElementById('video');
+        const canvasElement = document.getElementById('output_canvas');
+        const canvasCtx = canvasElement.getContext('2d');
+
+        function selectMode(mode) {
+            testMode = mode;
+            document.getElementById('modeSelectionOverlay').style.display = 'none';
+            document.getElementById('instructionsOverlay').style.display = 'flex';
+            
+            if (mode === 'camera') {
+                document.getElementById('instructionText').innerHTML = `
+                    <b>Camera Mode Active</b><br>
+                    1. Use <b>fingers (1-4)</b> to select answers.<br>
+                    2. Hold gesture for <b>2 seconds</b> to confirm.<br>
+                    3. No distance tracking required.
+                `;
+            }
+            setupDynamicGrid();
+        }
+
+        function setupDynamicGrid() {
+            const grid = document.getElementById('inputGrid');
+            grid.innerHTML = ''; // Clear existing
+            grid.style.gridTemplateColumns = 'repeat(2, 1fr)';
+            grid.style.maxWidth = '400px';
+            
+            for (let i = 0; i < 4; i++) {
+                const btn = document.createElement('button');
+                btn.className = 'key-btn';
+                btn.id = `optBtn${i+1}`;
+                btn.onclick = () => checkInput(currentOptions[i]);
+                grid.appendChild(btn);
+            }
+        }
+
+        function updateButtons() {
+            for (let i = 0; i < 4; i++) {
+                const btn = document.getElementById(`optBtn${i+1}`);
+                if (btn) {
+                    btn.innerHTML = `${currentOptions[i]}<br><span style="font-size:0.6rem; opacity:0.7;">(${i+1} Finger)</span>`;
+                }
+            }
+        }
+
+        async function initCamera() {
+            cameraActive = true;
+            document.getElementById('cameraContainer').style.display = 'block';
+
+            faceMesh = new FaceMesh({
+                locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`
+            });
+            faceMesh.setOptions({
+                maxNumFaces: 1,
+                refineLandmarks: true,
+                minDetectionConfidence: 0.5,
+                minTrackingConfidence: 0.5
+            });
+            faceMesh.onResults(onFaceResults);
+
+            hands = new Hands({
+                locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
+            });
+            hands.setOptions({
+                maxNumHands: 1,
+                modelComplexity: 1,
+                minDetectionConfidence: 0.5,
+                minTrackingConfidence: 0.5
+            });
+            hands.onResults(onHandResults);
+
+            camera = new Camera(videoElement, {
+                onFrame: async () => {
+                    await faceMesh.send({ image: videoElement });
+                    await hands.send({ image: videoElement });
+                },
+                width: 640,
+                height: 480
+            });
+            camera.start();
+        }
+
+        function onFaceResults(results) {
+            if (results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0) {
+                const landmarks = results.multiFaceLandmarks[0];
+                const p1 = landmarks[33];
+                const p2 = landmarks[263];
+                const dist_px = Math.sqrt(Math.pow(p1.x - p2.x, 2) + Math.pow(p1.y - p2.y, 2)) * 640;
+                
+                const distance_cm = Math.round(3500 / dist_px); 
+                lastDistance = distance_cm;
+                document.getElementById('distanceStatus').innerText = `Distance Active`;
+                
+                // Distance checking disabled as per request
+                isDistanceValid = true;
+                hideAlert();
+            }
+        }
+
+        function onHandResults(results) {
+            canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+            if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+                const landmarks = results.multiHandLandmarks[0];
+                drawConnectors(canvasCtx, landmarks, HAND_CONNECTIONS, {color: '#9d00ff', lineWidth: 2});
+                drawLandmarks(canvasCtx, landmarks, {color: '#ffffff', lineWidth: 1});
+                
+                const wrist = landmarks[0];
+                
+                // Finger detection logic ported from Android app (distance-based, rotation invariant)
+                const isIndex = isFingerExtended(wrist, landmarks[6], landmarks[8]);
+                const isMiddle = isFingerExtended(wrist, landmarks[10], landmarks[12]);
+                const isRing = isFingerExtended(wrist, landmarks[14], landmarks[16]);
+                const isPinky = isFingerExtended(wrist, landmarks[18], landmarks[20]);
+                
+                let fingers = 0;
+                if (isIndex) fingers++;
+                if (isMiddle) fingers++;
+                if (isRing) fingers++;
+                if (isPinky) fingers++;
+                
+                // Only use 1-4 fingers as per app's 4-option system
+                if (fingers > 4) fingers = 4;
+                
+                currentFingers = fingers;
+                document.getElementById('fingerStatus').innerText = `Fingers: ${fingers}`;
+                handleGestureLogic(fingers);
+            } else {
+                document.getElementById('fingerStatus').innerText = "No hand detected";
+                resetGestureTimer();
+            }
+        }
+
+        function isFingerExtended(wrist, pip, tip) {
+            const distTip = Math.hypot(tip.x - wrist.x, tip.y - wrist.y);
+            const distPip = Math.hypot(pip.x - wrist.x, pip.y - wrist.y);
+            return distTip > distPip;
+        }
+
+        function handleGestureLogic(fingers) {
+            if (fingers >= 1 && fingers <= 4 && isDistanceValid) {
+                if (fingers === lastGestureFingers) {
+                    if (!gestureTimer) {
+                        const start = Date.now();
+                        gestureTimer = setInterval(() => {
+                            const elapsed = Date.now() - start;
+                            const progress = Math.min((elapsed / gestureConfirmTime) * 100, 100);
+                            document.getElementById('gestureProgressBar').style.width = progress + '%';
+                            
+                            if (elapsed >= gestureConfirmTime) {
+                                confirmGesture(fingers);
+                                resetGestureTimer();
+                            }
+                        }, 50);
+                        document.getElementById('gestureProgressContainer').style.display = 'block';
+                        highlightButton(fingers);
+                    }
+                } else {
+                    resetGestureTimer();
+                    lastGestureFingers = fingers;
+                }
+            } else {
+                resetGestureTimer();
+            }
+        }
+
+        function resetGestureTimer() {
+            if (gestureTimer) clearInterval(gestureTimer);
+            gestureTimer = null;
+            document.getElementById('gestureProgressBar').style.width = '0%';
+            if (testMode !== 'camera') {
+                document.getElementById('gestureProgressContainer').style.display = 'none';
+            }
+            clearHighlights();
+        }
+
+        function highlightButton(fingers) {
+            clearHighlights();
+            const btn = document.getElementById(`optBtn${fingers}`);
+            if (btn) {
+                btn.style.background = 'var(--primary-purple)';
+                btn.style.boxShadow = '0 0 20px var(--primary-purple)';
+            }
+        }
+
+        function clearHighlights() {
+            for (let i = 1; i <= 4; i++) {
+                const btn = document.getElementById(`optBtn${i}`);
+                if (btn) {
+                    btn.style.background = '';
+                    btn.style.boxShadow = '';
+                }
+            }
+        }
+
+        function confirmGesture(fingers) {
+            const btn = document.getElementById(`optBtn${fingers}`);
+            if (btn) {
+                // Extract only the character from the button text (before the <br>)
+                const char = currentOptions[fingers - 1];
+                checkInput(char);
+                resetGestureTimer();
+            }
+        }
+
+        function showAlert(title, msg) {
+            const alert = document.getElementById('distanceAlert');
+            document.getElementById('alertTitle').innerText = title;
+            document.getElementById('alertMsg').innerText = msg;
+            alert.style.display = 'block';
+        }
+
+        function hideAlert() {
+            document.getElementById('distanceAlert').style.display = 'none';
+        }
+
+        async function startTest() {
+            if (testMode === 'camera' && !cameraActive) {
+                await initCamera();
+            }
+            document.getElementById('instructionsOverlay').style.display = 'none';
+            document.getElementById('targetBox').style.display = 'flex';
+            document.getElementById('inputGrid').style.display = 'grid';
+            document.getElementById('testProgress').style.display = 'block';
+            nextRound();
+        }
+
+        function nextRound() {
+            if (currentIndex >= notations.length) {
+                finishTest();
+                return;
+            }
+
+            // Select target character
+            currentTarget = chars[Math.floor(Math.random() * chars.length)];
+            
+            // Generate 4 unique options including target
+            currentOptions = [currentTarget];
+            while (currentOptions.length < 4) {
+                const randomChar = chars[Math.floor(Math.random() * chars.length)];
+                if (!currentOptions.includes(randomChar)) {
+                    currentOptions.push(randomChar);
+                }
+            }
+            
+            // Shuffle options
+            currentOptions.sort(() => Math.random() - 0.5);
+            
+            // Update UI
+            const targetEl = document.getElementById('targetChar');
+            targetEl.innerText = currentTarget;
+            targetEl.style.fontSize = sizes[currentIndex] + "px";
+            document.getElementById('currentCount').innerText = currentIndex + 1;
+            
+            levelStartTime = Date.now();
+            updateButtons();
+        }
+
+        async function checkInput(input) {
+            if (testMode === 'camera' && !isDistanceValid) {
+                // Prevent progress if distance is wrong
+                return;
+            }
+            
+            if (input === currentTarget) {
+                correctAnswers++;
+                totalReactionTime += (Date.now() - levelStartTime);
+            }
+            currentIndex++;
+            nextRound();
+        }
+
+        async function finishTest() {
+            let finalResult;
+            if (correctAnswers === 0) {
+                finalResult = "Vision low";
+            } else {
+                finalResult = notations[Math.min(correctAnswers - 1, notations.length - 1)];
+            }
+
+            document.getElementById('finalScore').innerText = finalResult;
+
+            const statusEl = document.getElementById('resultStatus');
+            const descEl = document.getElementById('resultDesc');
+
+            if (correctAnswers >= 9) {
+                statusEl.innerText = "Normal Vision";
+                statusEl.style.color = "var(--success-green)";
+                descEl.innerText = "Exceptional vision! Your visual acuity is excellent.";
+                if (typeof displayStars === 'function') displayStars('starContainer', 5);
+            } else if (correctAnswers >= 6) {
+                statusEl.innerText = "Average Vision";
+                statusEl.style.color = "var(--accent-orange)";
+                descEl.innerText = "Average vision. Consider a routine eye check.";
+                if (typeof displayStars === 'function') displayStars('starContainer', 3);
+            } else {
+                statusEl.innerText = "Low Vision";
+                statusEl.style.color = "var(--error-red)";
+                descEl.innerText = "Reduced acuity detected. Recommend consulting an eye care professional.";
+                if (typeof displayStars === 'function') displayStars('starContainer', 1);
+            }
+
+            document.getElementById('resultsOverlay').style.display = 'flex';
+
+            try {
+                await submitResult({
+                    game_name: "Visual Acuity",
+                    score: correctAnswers * 9, // Adjusted for 11 levels
+                    accuracy: Math.round((correctAnswers / 11) * 100),
+                    avg_time: correctAnswers > 0 ? Math.round(totalReactionTime / correctAnswers) : 0,
+                    correct_count: correctAnswers,
+                    level_info: finalResult
+                });
+
+                // Show History Dataset
+                if (typeof getGameResults === 'function' && typeof renderResultsTable === 'function') {
+                    const recentResults = await getGameResults();
+                    renderResultsTable(recentResults, 'historyTableContainer', 10);
+                }
+            } catch (e) {
+                console.error("Failed to upload results", e);
+            }
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | DynAcuity</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Outfit:wght@700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="css/index.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+</head>
+
+<body>
+    <div class="dashboard-container">
+        <!-- Header -->
+        <header class="user-header animate-fade-in">
+            <div class="avatar-container">
+                <img src="assets/images/avatar.png" alt="User Avatar" class="avatar-img">
+            </div>
+            <div class="user-text">
+                <h1 id="welcomeUser">Welcome back, User</h1>
+                <div class="user-stats-summary">
+                    LVL <span id="userLevel">--</span> &nbsp; <span id="userNextXp">--</span> XP to next Level
+                </div>
+            </div>
+        </header>
+
+        <!-- Stats Grid -->
+        <section class="stats-grid animate-fade-in" style="animation-delay: 0.1s;">
+            <div class="stat-item" onclick="window.location.href='progress.html'" style="cursor: pointer;">
+                <div class="stat-icon">👤</div>
+                <div id="stat-best-score" class="stat-value">--</div>
+                <div class="stat-label">Best Score</div>
+            </div>
+            <div class="stat-item" onclick="window.location.href='progress.html'" style="cursor: pointer;">
+                <div class="stat-icon">🎯</div>
+                <div id="stat-accuracy" class="stat-value">--%</div>
+                <div class="stat-label">Accuracy</div>
+            </div>
+            <div class="stat-item" onclick="window.location.href='progress.html'" style="cursor: pointer;">
+                <div class="stat-icon">🔥</div>
+                <div id="stat-streak" class="stat-value">--</div>
+                <div class="stat-label">Day Streak</div>
+            </div>
+        </section>
+
+        <!-- Quick Actions -->
+        <section class="animate-fade-in" style="animation-delay: 0.2s;">
+            <h2 class="section-title">Quick Actions</h2>
+            <div class="quick-actions">
+                <div class="action-card primary" onclick="window.location.href='games/index.html'">
+                    <div class="action-icon"><span>💠</span></div>
+                    <div class="action-label">Daily Training</div>
+                </div>
+                <div class="action-card" onclick="window.location.href='games/single-target.html'">
+                    <div class="action-icon"><span>◎</span></div>
+                    <div class="action-label">Single Target</div>
+                </div>
+                <div class="action-card" onclick="window.location.href='games/acuity.html'" style="border: 1px solid var(--primary-purple); background: rgba(108, 99, 255, 0.05);">
+                    <div class="action-icon"><span>🔬</span></div>
+                    <div class="action-label">Smart AI Acuity</div>
+                </div>
+                <h2 class="section-title">Learn More</h2>
+                <div class="action-card" onclick="window.location.href='dva-benefits.html'">
+                    <div class="action-icon"><span>⚡</span></div>
+                    <div class="action-label">Uses of DynAcuity</div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- Achievements Grid -->
+        <section class="animate-fade-in" style="animation-delay: 0.3s; margin-top: 32px;">
+            <h2 class="section-title" style="color: #7c4dff;">Milestone Achievements 🏆</h2>
+            <div id="dashboard-lifetime-stats" style="color: #888; font-size: 14px; margin-bottom: 16px;">
+                You have 0 qualified days total.
+            </div>
+            <div id="dashboard-achievements-grid" class="achievements-grid">
+                <!-- Populated by JS -->
+            </div>
+        </section>
+
+        <style>
+            .achievements-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+                gap: 12px;
+                margin-top: 16px;
+                padding-bottom: 24px;
+            }
+
+            .achievement-card {
+                background: #111;
+                border-radius: 12px;
+                padding: 12px;
+                text-align: center;
+                border: 1px solid #222;
+                position: relative;
+                transition: all 0.3s ease;
+            }
+
+            .achievement-card.locked {
+                opacity: 0.4;
+                filter: grayscale(1);
+            }
+
+            .achievement-card.locked::after {
+                content: "🔒";
+                position: absolute;
+                top: 5px;
+                right: 5px;
+                font-size: 10px;
+            }
+
+            .achievement-symbol {
+                font-size: 24px;
+                margin-bottom: 4px;
+            }
+
+            .achievement-name {
+                font-weight: 700;
+                font-size: 10px;
+                margin-bottom: 2px;
+                color: #fff;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            .achievement-milestone {
+                font-size: 9px;
+                color: #888;
+            }
+
+            .achievement-card.unlocked {
+                border-color: #7c4dff;
+                background: linear-gradient(145deg, #111, #1a1a1a);
+                box-shadow: 0 4px 10px rgba(124, 77, 255, 0.1);
+            }
+        </style>
+
+        <!-- Additional sections removed as per request -->
+
+        <!-- Bottom Navigation -->
+        <nav class="bottom-nav">
+            <a href="dashboard.html" class="nav-link active">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                    <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                </svg>
+                <span class="nav-label">Home</span>
+            </a>
+            <a href="games/index.html" class="nav-link">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <rect x="2" y="6" width="20" height="12" rx="2"></rect>
+                    <path d="M6 12h.01M10 12h.01M15 10l-2 2 2 2M19 10l2 2-2 2"></path>
+                </svg>
+                <span class="nav-label">Games</span>
+            </a>
+            <a href="progress.html" class="nav-link">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <line x1="18" y1="20" x2="18" y2="10"></line>
+                    <line x1="12" y1="20" x2="12" y2="4"></line>
+                    <line x1="6" y1="20" x2="6" y2="14"></line>
+                </svg>
+                <span class="nav-label">Progress</span>
+            </a>
+            <a href="settings.html" class="nav-link">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="3"></circle>
+                    <path
+                        d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z">
+                    </path>
+                </svg>
+                <span class="nav-label">Settings</span>
+            </a>
+        </nav>
+    </div>
+
+    <script src="js/auth.js?v=1.2"></script>
+    <script src="js/sound-manager.js"></script>
+    <script src="js/dashboard.js?v=1.2"></script>
+    <script>
+        // Inline fallback to ensure stats update even if external scripts have issues
+        (async function () {
+            const token = localStorage.getItem('dynacuity_token');
+            if (!token) return;
+
+            try {
+                const response = await fetch(window.location.origin + '/api/auth/user/', {
+                    headers: {
+                        'Authorization': 'Token ' + token,
+                        'ngrok-skip-browser-warning': 'true'
+                    }
+                });
+                if (response.ok) {
+                    const user = await response.json();
+                    console.log("Inline Fallback Sync Success:", user);
+
+                    // Update Welcome Text
+                    const welcomeEl = document.getElementById('welcomeUser');
+                    if (welcomeEl) welcomeEl.innerText = `Welcome back, ${user.full_name || user.first_name || user.username || 'User'}`;
+
+                    // Update Level and XP
+                    const lvEl = document.getElementById('userLevel');
+                    const xpEl = document.getElementById('userNextXp');
+                    if (lvEl) lvEl.innerText = user.level || '--';
+                    if (xpEl) {
+                        const nextLevelXp = (user.level || 1) * 1000;
+                        const xpToNext = Math.max(0, nextLevelXp - (user.xp || 0));
+                        xpEl.innerText = xpToNext.toLocaleString();
+                    }
+
+                    if (user.best_score !== undefined) {
+                        const scoreEl = document.getElementById('stat-best-score');
+                        if (scoreEl) scoreEl.innerText = user.best_score >= 1000 ? (user.best_score / 1000).toFixed(1) + 'k' : user.best_score;
+                    }
+                    if (user.accuracy !== undefined) {
+                        const accEl = document.getElementById('stat-accuracy');
+                        if (accEl) accEl.innerText = Math.round(user.accuracy) + '%';
+                    }
+                    if (user.streak !== undefined) {
+                        const streakEl = document.getElementById('stat-streak');
+                        if (streakEl) streakEl.innerText = user.streak;
+                    }
+                }
+            } catch (e) {
+                console.error("Inline Fallback Sync Failed:", e);
+            }
+        })();
+
+        const titles = [
+            "Bronze Visionary", "Silver Tracker", "Gold Observer", "Platinum Focus", "Diamond Eye",
+            "Hawk Eye", "Eagle Vision", "Sniper Precision", "Supersonic Reflex", "Light Speed",
+            "Master of Detail", "Visual Maestro", "Motion Sage", "Chronos Tracker", "Zenith Gaze",
+            "Titan Sight", "Oracle Vision", "Celestial Focus", "Infinity Gaze", "Ultimate DynAcuity",
+            "Galactic Sentinel", "Nebula Watcher", "Supernova Insight", "Quantum Observer", "Dimension Piercer",
+            "Eternal Guardian", "Cosmic Legend", "Mythic Eye", "Transcendent Vision", "God Mode"
+        ];
+
+        const icons = [
+            "🥉", "🥈", "🥇", "💎", "💠", "🦅", "🦅", "🎯", "⚡", "🌟",
+            "🔍", "🎵", "🧘", "⏳", "🌌", "🛡️", "🔮", "🪐", "♾️", "🏆",
+            "🌌", "☁️", "💥", "⚛️", "🌀", "🛡️", "🌠", "🐉", "✨", "👑"
+        ];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const grid = document.getElementById('dashboard-achievements-grid');
+            const stats = document.getElementById('dashboard-lifetime-stats');
+
+            const qualifiedDays = parseInt(localStorage.getItem('qualifiedDays')) || 0;
+            stats.innerText = `You have ${qualifiedDays} qualified days total.`;
+
+            for (let i = 0; i < 30; i++) {
+                const milestone = (i + 1) * 50;
+                const isUnlocked = qualifiedDays >= milestone;
+
+                const card = document.createElement('div');
+                card.className = `achievement-card ${isUnlocked ? 'unlocked' : 'locked'}`;
+                card.innerHTML = `
+                    <div class="achievement-symbol">${icons[i]}</div>
+                    <div class="achievement-name">${titles[i]}</div>
+                    <div class="achievement-milestone">${isUnlocked ? 'Unlocked' : milestone + ' Days'}</div>
+                `;
+                grid.appendChild(card);
+            }
+        });
+    </script>
+</body>
+
+</html>

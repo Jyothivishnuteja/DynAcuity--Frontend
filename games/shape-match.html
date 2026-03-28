@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shape Match | DynAcuity</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Outfit:wght@700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="../css/index.css">
+    <style>
+        .game-container {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: #09090b;
+            padding: 2rem;
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            max-width: 600px;
+            width: 100%;
+            margin: 2rem 0;
+        }
+
+        .shape-card {
+            aspect-ratio: 1;
+            background: var(--surface-light);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: transform 0.3s, background 0.3s;
+            font-size: 2.5rem;
+            position: relative;
+            transform-style: preserve-3d;
+        }
+
+        .shape-card.revealed {
+            background: #fff;
+            color: #000;
+            transform: rotateY(180deg);
+        }
+
+        .shape-card .back {
+            position: absolute;
+            background: var(--primary-purple);
+            inset: 0;
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: #fff;
+            backface-visibility: hidden;
+        }
+
+        .shape-card .front {
+            transform: rotateY(180deg);
+            backface-visibility: hidden;
+        }
+
+        .stats-header {
+            width: 100%;
+            max-width: 600px;
+            display: flex;
+            justify-content: space-between;
+            color: var(--text-secondary);
+            font-family: 'Outfit';
+        }
+
+        .overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="game-container">
+        <header class="stats-header">
+            <a href="index.html" style="color: #fff; text-decoration: none; padding: 0 1rem 0 0;">←</a>
+            <span>Trainer: <span id="userName" style="color: var(--primary-purple);">User</span></span>
+            <span>Round <span id="roundVal">1</span>/10</span>
+            <span>Score: <span id="scoreVal">0</span></span>
+        </header>
+
+        <h2 id="instructionText" style="margin-top: 1rem; color: #fff;">Memorize the pair!</h2>
+        <div id="levelDisplayInfo"
+            style="margin-top: 0.5rem; color: var(--primary-purple); font-weight: 600; font-size: 1.1rem;">
+            <!-- Level Name injected here -->
+        </div>
+
+        <div id="cardGrid" class="grid-container"></div>
+
+        <div id="resultsOverlay" class="overlay" style="display: none;">
+            <h2 style="font-size: 2.5rem; margin-bottom: 0.5rem; font-family: 'Outfit';">Session Complete</h2>
+            <div id="starContainer" style="margin-bottom: 2rem;"></div>
+            <div style="margin-bottom: 3rem;">
+                <p style="font-size: 4rem; color: var(--primary-purple); font-weight: 700;" id="finalScore">0</p>
+                <p style="color: var(--text-secondary);">Memory Performance Score</p>
+            </div>
+            
+            <div style="font-size: 0.8rem; font-weight: 800; color: #a1a1aa; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 0.5rem; text-align: left;">Performance Dataset (db.sqlite)</div>
+            <div id="historyContainer" style="width: 100%; max-width: 400px; margin-bottom: 2rem;"></div>
+            <button onclick="window.location.href='index.html'" class="btn btn-primary"
+                style="width: 250px; margin-bottom: 1rem;">Return to Suite</button>
+            <a href="../progress.html"
+                style="color: var(--primary-purple); text-decoration: none; font-weight: 600; font-size: 0.9rem;">View
+                Performance Trends →</a>
+        </div>
+    </div>
+
+    <script src="../js/auth.js"></script>
+    <script>
+        // Parse URL params
+        const urlParams = new URLSearchParams(window.location.search);
+        let levelName = urlParams.get('name') || "Level 1.0x";
+        let levelMultiplier = parseFloat(urlParams.get('mult')) || 1.0;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const user = JSON.parse(localStorage.getItem('dynacuity_user'));
+            if (user && user.full_name) {
+                document.getElementById('userName').innerText = user.full_name;
+            }
+            document.getElementById('levelDisplayInfo').innerText = levelName;
+        });
+
+        const shapes = ['⭐', '💠', '🔺', '🟥', '⚪', '💎'];
+        let score = 0;
+        let round = 1;
+        let maxRounds = 10;
+        let canClick = false;
+        let selectedCards = [];
+        let pairIndex = -1;
+        let roundStartTime = 0;
+        let totalReactionTime = 0;
+
+        function startRound() {
+            if (round > maxRounds) {
+                endGame();
+                return;
+            }
+
+            canClick = false;
+            selectedCards = [];
+            const grid = document.getElementById('cardGrid');
+            grid.innerHTML = '';
+            document.getElementById('roundVal').innerText = round;
+            document.getElementById('instructionText').innerText = "Memorize the positions!";
+
+            // Generate level: 6 cards, 1 pair, 4 distractors
+            const availableShapes = [...shapes].sort(() => Math.random() - 0.5);
+            pairIndex = availableShapes[0];
+            const roundShapes = [pairIndex, pairIndex, availableShapes[1], availableShapes[2], availableShapes[3], availableShapes[4]];
+            roundShapes.sort(() => Math.random() - 0.5);
+
+            roundShapes.forEach((shape, i) => {
+                const card = document.createElement('div');
+                card.className = 'shape-card revealed';
+                card.dataset.shape = shape;
+                card.innerHTML = `<div class="back">?</div><div class="front">${shape}</div>`;
+                card.onclick = () => handleCardClick(card);
+                grid.appendChild(card);
+            });
+
+            // Memorize phase scales with multiplier (base 1.5s)
+            const memTime = Math.max(400, 1500 / levelMultiplier);
+
+            setTimeout(() => {
+                document.querySelectorAll('.shape-card').forEach(c => c.classList.remove('revealed'));
+                document.getElementById('instructionText').innerText = "Find the matching pair!";
+                roundStartTime = Date.now();
+                canClick = true;
+            }, memTime);
+        }
+
+        function handleCardClick(card) {
+            if (!canClick || card.classList.contains('revealed') || selectedCards.includes(card)) return;
+
+            card.classList.add('revealed');
+            selectedCards.push(card);
+
+            if (selectedCards.length === 2) {
+                canClick = false;
+                checkMatch();
+            }
+        }
+
+        function checkMatch() {
+            const [c1, c2] = selectedCards;
+            if (c1.dataset.shape === c2.dataset.shape) {
+                // Higher score for higher diff
+                score += Math.floor(100 * levelMultiplier);
+                document.getElementById('scoreVal').innerText = score;
+                document.getElementById('instructionText').innerText = "Match Found!";
+                document.getElementById('instructionText').style.color = '#10b981';
+                totalReactionTime += (Date.now() - roundStartTime);
+            } else {
+                score = Math.max(0, score - 20);
+                document.getElementById('scoreVal').innerText = score;
+                document.getElementById('instructionText').innerText = "Try again next round...";
+                document.getElementById('instructionText').style.color = '#ef4444';
+            }
+
+            setTimeout(() => {
+                document.getElementById('instructionText').style.color = '#fff';
+                round++;
+                startRound();
+            }, 1000);
+        }
+
+        async function endGame() {
+            document.getElementById('finalScore').innerText = score;
+
+            // Calculate Stars (1-5 based on score and multiplier)
+            const baseScore = score / (levelMultiplier || 1);
+            let stars = 0;
+            if (baseScore >= 900) stars = 5;
+            else if (baseScore >= 750) stars = 4;
+            else if (baseScore >= 500) stars = 3;
+            else if (baseScore >= 300) stars = 2;
+            else if (baseScore >= 100) stars = 1;
+
+            if (typeof displayStars === 'function') {
+                displayStars('starContainer', stars);
+            }
+
+            document.getElementById('resultsOverlay').style.display = 'flex';
+
+            await submitResult({
+                game_name: "Shape Match",
+                score: score,
+                accuracy: 100, // simplify
+                avg_time: Math.round(totalReactionTime / maxRounds),
+                correct_count: Math.floor(score / 100),
+                level_info: levelName
+            });
+
+            // Show History Dataset
+            if (typeof getGameResults === 'function' && typeof renderResultsTable === 'function') {
+                const recentResults = await getGameResults();
+                renderResultsTable(recentResults, 'historyContainer', 10);
+            }
+        }
+
+        // Slight delay before round 1 starts to let UI loads
+        setTimeout(startRound, 500);
+    </script>
+</body>
+
+</html>

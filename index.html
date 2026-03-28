@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DynAcuity | AI-Powered Visual Training</title>
+    <meta name="description"
+        content="Elevate your visual performance with AI-powered training games. Improve focus, tracking, and reaction speed.">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Outfit:wght@700&display=swap"
+        rel="stylesheet">
+    <!-- Main Styles -->
+    <link rel="stylesheet" href="css/index.css">
+</head>
+
+<body>
+    <!-- Navigation -->
+    <nav class="glass"
+        style="position: fixed; top: 1rem; width: 90%; left: 5%; z-index: 1000; padding: 0.8rem 2rem; display: flex; justify-content: space-between; align-items: center;">
+        <div class="logo"
+            style="font-family: 'Outfit'; font-size: 1.5rem; color: var(--primary-purple); display: flex; align-items: center; gap: 0.5rem;">
+            <img src="images/logo.png" alt="DynAcuity Logo" style="height: 2rem; width: auto;">
+            DynAcuity
+        </div>
+        <div class="nav-links" style="display: flex; gap: 2rem;">
+            <a href="#features" style="color: var(--text-secondary); text-decoration: none;">Features</a>
+            <a href="auth/login.html" class="btn btn-outline" style="padding: 0.5rem 1rem;">Log In</a>
+            <a href="auth/signup.html" class="btn btn-primary" style="padding: 0.5rem 1rem;">Get Started</a>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero flex-center" style="min-height: 100vh; text-align: center; padding-top: 5rem;"
+        id="heroSection">
+        <div class="container animate-fade-in">
+            <h1
+                style="font-size: 4.5rem; margin-bottom: 1.5rem; background: linear-gradient(135deg, #fff 0%, var(--primary-purple) 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;">
+                Master Your Vision.
+            </h1>
+            <p style="font-size: 1.25rem; color: var(--text-secondary); max-width: 600px; margin: 0 auto 2.5rem;">
+                Scientific training to enhance dynamic visual acuity, focus, and cognitive reaction speed through
+                immersive AI-driven games.
+            </p>
+            <div style="display: flex; gap: 1.5rem; justify-content: center;">
+                <a href="auth/login.html" id="ctaBtn" class="btn btn-primary"
+                    style="font-size: 1.1rem; padding: 1rem 2.5rem;">Launch Dashboard</a>
+                <a href="#features" class="btn btn-outline" style="font-size: 1.1rem; padding: 1rem 2.5rem;">Explore
+                    Suite</a>
+            </div>
+            <p style="color: var(--text-secondary); margin-top: 2rem; font-size: 0.85rem; opacity: 0.7;">
+                * Password requirements: < 15 characters, 1 uppercase, 1 special character.
+            </p>
+        </div>
+    </section>
+
+    <!-- Features -->
+    <section id="features" class="container" style="padding: 8rem 0;">
+        <div style="text-align: center; margin-bottom: 4rem;">
+            <h2 style="font-size: 2.5rem; margin-bottom: 1rem;">Next-Gen Training</h2>
+            <p style="color: var(--text-secondary);">Scientifically designed modules for elite visual performance.</p>
+        </div>
+        <div class="grid-3">
+            <div class="glass-card">
+                <div style="font-size: 2rem; margin-bottom: 1rem;">🥊</div>
+                <h3>Reflex Trainer</h3>
+                <p style="color: var(--text-secondary); margin-top: 1rem;">Elite boxing-style reaction drills with neon
+                    crosshairs to sharpen your focus and processing speed.</p>
+            </div>
+            <div class="glass-card">
+                <div style="font-size: 2rem; margin-bottom: 1rem;">🌀</div>
+                <h3>Pattern Flow</h3>
+                <p style="color: var(--text-secondary); margin-top: 1rem;">Train selective attention in high-intensity
+                    visual environments with dynamic shifting shadows and rapid targets.</p>
+            </div>
+            <div class="glass-card">
+                <div style="font-size: 2rem; margin-bottom: 1rem;">⚡</div>
+                <h3>DVA Flash</h3>
+                <p style="color: var(--text-secondary); margin-top: 1rem;">Improve dynamic visual acuity by identifying
+                    high-speed character sequences with precise timing.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Social Proof -->
+    <section class="container" style="padding-bottom: 8rem; text-align: center;">
+        <div class="glass" style="padding: 4rem; border-radius: var(--radius-lg);">
+            <h2 style="font-size: 3rem; margin-bottom: 1.5rem;">Ready to reach peak focus?</h2>
+            <a href="auth/signup.html" class="btn btn-primary" style="font-size: 1.25rem; padding: 1.2rem 3rem;">Create
+                Free Account</a>
+            <p style="color: var(--text-secondary); margin-top: 1rem; font-size: 0.9rem;">
+                Password must be < 15 chars, with 1 capital and 1 special character.
+            </p>
+        </div>
+    </section>
+
+    <footer
+        style="padding: 4rem; text-align: center; border-top: 1px solid var(--glass-border); color: var(--text-secondary);">
+        <p>© 2026 DynAcuity. Powered by AI.</p>
+    </footer>
+
+    <script src="js/sound-manager.js"></script>
+    <script src="js/app.js"></script>
+</body>
+
+</html>

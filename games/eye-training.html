@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eye Training | DynAcuity</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Outfit:wght@700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="../css/index.css">
+    <style>
+        body {
+            background: #000;
+            margin: 0;
+            overflow: hidden;
+            font-family: 'Inter', sans-serif;
+            color: #fff;
+        }
+
+        .game-container {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            padding: 2rem 1rem;
+            box-sizing: border-box;
+        }
+
+        header {
+            text-align: center;
+            z-index: 10;
+        }
+
+        h1 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 2.5rem;
+            margin: 0;
+            background: linear-gradient(to right, #fff, #888);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            font-size: 1.25rem;
+            color: #666;
+            letter-spacing: 2px;
+            font-weight: 600;
+        }
+
+        .animation-area {
+            flex: 1;
+            width: 100%;
+            max-width: 600px;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .controls {
+            width: 100%;
+            max-width: 500px;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            z-index: 10;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .group-label {
+            text-align: center;
+            font-size: 0.7rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: #444;
+        }
+
+        .btn-row {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: center;
+        }
+
+        .btn-mode {
+            flex: 1;
+            background: #111;
+            border: 1px solid #222;
+            color: #666;
+            padding: 0.75rem;
+            border-radius: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-mode.active {
+            background: #fff;
+            color: #000;
+            border-color: #fff;
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-speed {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: #111;
+            border: 2px solid #222;
+            color: #666;
+            font-weight: 900;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-speed.active {
+            background: #3b82f6;
+            color: #fff;
+            border-color: #60a5fa;
+            transform: scale(1.1);
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.4);
+        }
+
+        .back-btn {
+            position: absolute;
+            top: 1.5rem;
+            left: 1.5rem;
+            color: #fff;
+            text-decoration: none;
+            opacity: 0.5;
+            font-size: 1.5rem;
+            transition: opacity 0.2s;
+        }
+
+        .back-btn:hover {
+            opacity: 1;
+        }
+
+        svg {
+            width: 100%;
+            height: 100%;
+            overflow: visible;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="game-container">
+        <a href="index.html" class="back-btn">←</a>
+
+        <header>
+            <h1>Eye Training</h1>
+            <div class="subtitle">480 FPS SIM</div>
+        </header>
+
+        <div class="animation-area" id="svgContainer">
+            <!-- SVG will be injected here -->
+        </div>
+
+        <div class="controls">
+            <div class="control-group">
+                <div class="group-label">Movement Pattern</div>
+                <div class="btn-row">
+                    <button class="btn-mode active" onclick="setPattern('zigzag')">ZigZag</button>
+                    <button class="btn-mode" onclick="setPattern('star')">Star</button>
+                    <button class="btn-mode" onclick="setPattern('infinity')">Infinity</button>
+                    <button class="btn-mode" onclick="setPattern('circle')">Circle</button>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <div class="group-label">Tracking Speed</div>
+                <div class="btn-row">
+                    <button class="btn-speed active" onclick="setSpeed(1)">1x</button>
+                    <button class="btn-speed" onclick="setSpeed(2)">2x</button>
+                    <button class="btn-speed" onclick="setSpeed(3)">3x</button>
+                    <button class="btn-speed" onclick="setSpeed(4)">4x</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const PATTERNS = {
+            zigzag: {
+                path: 'M 50 100 L 950 100 L 50 250 L 950 250 L 50 400 L 950 400 L 50 550 L 950 550 L 50 700 L 950 700 L 50 850 L 950 850 L 50 100',
+                color: '#fbbf24',
+                duration: 6
+            },
+            star: {
+                // Classic 5-pointed star
+                path: 'M 500 50 L 630 400 L 950 400 L 690 610 L 790 950 L 500 740 L 210 950 L 310 610 L 50 400 L 370 400 Z',
+                color: '#22d3ee', // cyan-400
+                duration: 4
+            },
+            infinity: {
+                path: 'M 500 500 C 650 200, 900 200, 900 500 C 900 800, 650 800, 500 500 C 350 200, 100 200, 100 500 C 100 800, 350 800, 500 500 Z',
+                color: '#3b82f6',
+                duration: 3
+            },
+            circle: {
+                path: 'M 500 100 A 400 400 0 0 1 500 900 A 400 400 0 0 1 500 100 Z',
+                color: '#ec4899',
+                duration: 2.5
+            }
+        };
+
+        let currentPattern = 'zigzag';
+        let currentSpeed = 1;
+
+        function renderSVG() {
+            const container = document.getElementById('svgContainer');
+            const data = PATTERNS[currentPattern];
+            const actualDuration = data.duration / currentSpeed;
+
+            container.innerHTML = `
+                <svg viewBox="0 0 1000 1000" preserveAspectRatio="xMidYMid meet">
+                    <path d="${data.path}" fill="none" stroke="rgba(255, 255, 255, 0.15)" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" />
+                    <circle r="30" fill="${data.color}" style="filter: drop-shadow(0 0 20px ${data.color})">
+                        <animateMotion dur="${actualDuration}s" repeatCount="indefinite" path="${data.path}" />
+                    </circle>
+                </svg>
+            `;
+        }
+
+        function setPattern(pattern) {
+            currentPattern = pattern;
+            document.querySelectorAll('.btn-mode').forEach(btn => {
+                btn.classList.toggle('active', btn.innerText.toLowerCase() === pattern);
+            });
+            renderSVG();
+        }
+
+        function setSpeed(speed) {
+            currentSpeed = speed;
+            document.querySelectorAll('.btn-speed').forEach(btn => {
+                btn.classList.toggle('active', parseInt(btn.innerText) === speed);
+            });
+            renderSVG();
+        }
+
+        // Initial render
+        renderSVG();
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mouse Tap | DynAcuity</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Outfit:wght@700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="../css/index.css">
+    <style>
+        :root {
+            --target-pink: #ec4899;
+            --target-glow: rgba(236, 72, 153, 0.6);
+        }
+
+        body {
+            overflow: hidden;
+            background: #000;
+            color: #fff;
+            user-select: none;
+            touch-action: none;
+        }
+
+        .game-area {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            cursor: crosshair;
+        }
+
+        /* Top HUD */
+        .hud {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            padding: 3rem 1.5rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 50;
+            pointer-events: none;
+        }
+
+        .hud-left,
+        .hud-right,
+        .hud-center {
+            pointer-events: auto;
+        }
+
+        .hud-btn {
+            width: 44px;
+            height: 44px;
+            background: rgba(24, 24, 27, 0.8);
+            backdrop-filter: blur(8px);
+            border: 1px solid var(--glass-border);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: 0.2s;
+            color: #fff;
+            text-decoration: none;
+        }
+
+        .hud-btn:hover {
+            background: #27272a;
+        }
+
+        .score-display {
+            background: rgba(24, 24, 27, 0.8);
+            backdrop-filter: blur(8px);
+            padding: 0.5rem 2rem;
+            border-radius: 1rem;
+            border: 1px solid var(--glass-border);
+            text-align: center;
+        }
+
+        .score-label {
+            font-size: 0.7rem;
+            color: #a1a1aa;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+
+        .score-value {
+            font-size: 2rem;
+            font-weight: 700;
+            font-family: 'Outfit';
+        }
+
+        .timer-badge {
+            background: rgba(24, 24, 27, 0.8);
+            backdrop-filter: blur(8px);
+            padding: 0.5rem 1rem;
+            border-radius: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-family: 'Outfit';
+            font-weight: 700;
+            border: 1px solid var(--glass-border);
+        }
+
+        .timer-warning {
+            color: #ef4444 !important;
+        }
+
+        /* Target */
+        .target {
+            position: absolute;
+            background: var(--target-pink);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 30px var(--target-glow);
+            cursor: pointer;
+            z-index: 40;
+            transition: transform 0.1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transform: scale(0);
+        }
+
+        .target.visible {
+            transform: scale(1);
+        }
+
+        .target:active {
+            transform: scale(0.9);
+        }
+
+        .target svg {
+            width: 50%;
+            height: 50%;
+            fill: #fff;
+        }
+
+        /* Floating Text */
+        .floating-text {
+            position: absolute;
+            pointer-events: none;
+            font-weight: 800;
+            font-size: 1.25rem;
+            z-index: 60;
+            animation: floatUp 1s forwards cubic-bezier(0, 0, 0.2, 1);
+        }
+
+        @keyframes floatUp {
+            0% {
+                transform: translate(-50%, 0);
+                opacity: 1;
+            }
+
+            100% {
+                transform: translate(-50%, -60px);
+                opacity: 0;
+            }
+        }
+
+        /* Overlays */
+        .overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            padding: 2rem;
+        }
+
+        .card {
+            background: #18181b;
+            border: 1px solid var(--glass-border);
+            border-radius: 2rem;
+            width: 100%;
+            max-width: 400px;
+            padding: 2.5rem;
+            text-align: center;
+        }
+
+        /* Results Specific */
+        .ring-container {
+            position: relative;
+            width: 160px;
+            height: 160px;
+            margin: 2rem auto;
+        }
+
+        .ring-svg {
+            transform: rotate(-90deg);
+        }
+
+        .ring-bg {
+            fill: none;
+            stroke: #27272a;
+            stroke-width: 10;
+        }
+
+        .ring-progress {
+            fill: none;
+            stroke: var(--primary-purple);
+            stroke-width: 10;
+            stroke-linecap: round;
+            stroke-dasharray: 440;
+            stroke-dashoffset: 440;
+            transition: stroke-dashoffset 1s ease-out;
+        }
+
+        .ring-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+
+        .stat-card {
+            background: rgba(39, 39, 42, 0.5);
+            padding: 1rem;
+            border-radius: 1.25rem;
+            border: 1px solid var(--glass-border);
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: #a1a1aa;
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-value {
+            font-size: 1.25rem;
+            font-weight: 700;
+            font-family: 'Outfit';
+        }
+    </style>
+</head>
+
+<body onclick="handleBackgroundClick(event)">
+    <div class="game-area" id="gameArea"></div>
+
+    <div class="hud">
+        <div class="hud-left" style="display: flex; gap: 0.75rem;">
+            <a href="level-select.html?game=mouse-tap" class="hud-btn">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M19 12H5M12 19l-7-7 7-7" />
+                </svg>
+            </a>
+            <div class="hud-btn" onclick="pauseGame()">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="6" y="4" width="4" height="16" />
+                    <rect x="14" y="4" width="4" height="16" />
+                </svg>
+            </div>
+        </div>
+
+        <div class="hud-center">
+            <div class="score-display">
+                <div class="score-label">Score</div>
+                <div class="score-value" id="scoreVal">0</div>
+            </div>
+        </div>
+
+        <div class="hud-right">
+            <div class="timer-badge">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10" />
+                    <polyline points="12 6 12 12 16 14" />
+                </svg>
+                <span id="timerVal">60s</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Target Element (Reused) -->
+    <div id="target" class="target" onclick="handleTargetHit(event)">
+        <svg viewBox="0 0 24 24">
+            <path d="M13 15l2 2 5-5M4 11V9a2 2 0 012-2h5M8 21h8a2 2 0 002-2v-1M3 3l18 18" stroke="currentColor"
+                stroke-width="2" fill="none" />
+        </svg>
+    </div>
+
+    <!-- Pause Overlay -->
+    <div id="pauseOverlay" class="overlay" style="display: none;">
+        <div class="card">
+            <h2 style="font-size: 2.5rem; margin-bottom: 2rem; font-family: 'Outfit';">Paused</h2>
+            <button onclick="resumeGame()" class="btn btn-primary"
+                style="width: 100%; padding: 1.25rem; margin-bottom: 1rem;">Resume Game</button>
+            <button onclick="window.location.href='index.html'" class="btn"
+                style="width: 100%; border: 1px solid #27272a; color: #a1a1aa;">Quit Session</button>
+        </div>
+    </div>
+
+    <!-- Results Overlay -->
+    <div id="resultsOverlay" class="overlay" style="display: none;">
+        <div class="card" style="max-width: 440px;">
+            <div
+                style="font-size: 0.8rem; font-weight: 800; color: #a1a1aa; letter-spacing: 0.2em; text-transform: uppercase;">
+                Session Complete</div>
+            <h2 id="levelNameDisplay" style="font-size: 2.5rem; margin-top: 0.5rem; font-family: 'Outfit';">Elite</h2>
+            <div id="starContainer" style="margin-top: 0.5rem;"></div>
+
+            <div class="ring-container">
+                <svg class="ring-svg" width="160" height="160">
+                    <circle class="ring-bg" cx="80" cy="80" r="70" />
+                    <circle id="accuracyRing" class="ring-progress" cx="80" cy="80" r="70" />
+                </svg>
+                <div class="ring-text">
+                    <div id="finalScore" style="font-size: 2.5rem; font-weight: 800; font-family: 'Outfit';">0</div>
+                    <div style="font-size: 0.7rem; color: #a1a1aa; text-transform: uppercase; font-weight: 700;">Points
+                    </div>
+                </div>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-label">Accuracy</div>
+                    <div class="stat-value" id="resAccuracy">0%</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Avg Reaction</div>
+                    <div class="stat-value" id="resAvgRT">0ms</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Best Streak</div>
+                    <div class="stat-value" id="resStreak">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Misses</div>
+                    <div class="stat-value" id="resMisses" style="color: #ef4444;">0</div>
+                </div>
+            </div>
+
+            <div style="font-size: 0.8rem; font-weight: 800; color: #a1a1aa; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 0.5rem; text-align: left;">Performance Dataset (db.sqlite)</div>
+            <div id="historyContainer"></div>
+
+            <button onclick="location.reload()" class="btn btn-primary"
+                style="width: 100%; padding: 1rem; margin: 1rem 0 0.75rem 0;">Retry Level</button>
+            <button onclick="window.location.href='index.html'" class="btn"
+                style="width: 100%; border: 1px solid #27272a; color: #a1a1aa; margin-bottom: 1.5rem;">Return to
+                Suite</button>
+            <a href="../progress.html"
+                style="color: var(--primary-purple); text-decoration: none; font-weight: 600; font-size: 0.9rem;">View
+                Performance Trends →</a>
+        </div>
+    </div>
+
+    <script src="../js/auth.js"></script>
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const config = {
+            name: urlParams.get('name') || 'Pro',
+            gap: parseInt(urlParams.get('gap')) || 600,
+            vis: parseInt(urlParams.get('vis')) || 800,
+            sizeStr: urlParams.get('size') || 'Medium',
+            mult: parseFloat(urlParams.get('mult')) || 2.5
+        };
+
+        const targetEl = document.getElementById('target');
+        const scoreEl = document.getElementById('scoreVal');
+        const timerEl = document.getElementById('timerVal');
+        const gameArea = document.getElementById('gameArea');
+
+        let score = 0;
+        let timeLeft = 60;
+        let isRunning = false;
+        let isPaused = false;
+        let isVisible = false;
+
+        // Stats track via object
+        const stats = {
+            hits: 0,
+            misses: 0,
+            reactionTimes: [],
+            currentStreak: 0,
+            bestStreak: 0,
+            appearTime: 0
+        };
+
+        // Timers
+        let gameLoopTimeout;
+        let hideTimeout;
+        let countdownInterval;
+
+        // Init size based on string
+        const sizeMap = { 'Small': 60, 'Medium': 80, 'Large': 100 };
+        const pixelSize = sizeMap[config.sizeStr] || 80;
+        targetEl.style.width = pixelSize + 'px';
+        targetEl.style.height = pixelSize + 'px';
+
+        function startGame() {
+            isRunning = true;
+            spawnMouse();
+            startCountdown();
+        }
+
+        function startCountdown() {
+            countdownInterval = setInterval(() => {
+                if (isPaused) return;
+                timeLeft--;
+                timerEl.innerText = timeLeft + 's';
+                if (timeLeft <= 10) timerEl.classList.add('timer-warning');
+                if (timeLeft <= 0) endGame();
+            }, 1000);
+        }
+
+        function spawnMouse() {
+            if (!isRunning || isPaused || timeLeft <= 0) return;
+
+            const maxX = window.innerWidth - pixelSize - 40;
+            const maxY = window.innerHeight - pixelSize - 160;
+            const x = Math.max(20, Math.random() * maxX);
+            const y = Math.max(120, Math.random() * maxY);
+
+            targetEl.style.left = x + 'px';
+            targetEl.style.top = y + 'px';
+
+            // Show
+            isVisible = true;
+            targetEl.classList.add('visible');
+            stats.appearTime = Date.now();
+
+            // Auto-hide timeout
+            hideTimeout = setTimeout(() => {
+                if (isVisible) {
+                    handleMiss(0, 0, true); // Silent timeout miss
+                    hideTarget();
+                }
+            }, config.vis);
+        }
+
+        function hideTarget() {
+            isVisible = false;
+            targetEl.classList.remove('visible');
+
+            // Gap before next spawn
+            gameLoopTimeout = setTimeout(spawnMouse, config.gap);
+        }
+
+        function handleTargetHit(e) {
+            e.stopPropagation();
+            if (!isVisible || isPaused) return;
+
+            const rt = Date.now() - stats.appearTime;
+            stats.hits++;
+            stats.reactionTimes.push(rt);
+            stats.currentStreak++;
+            if (stats.currentStreak > stats.bestStreak) stats.bestStreak = stats.currentStreak;
+
+            score++;
+            scoreEl.innerText = score;
+
+            addFloatingText('+1', e.clientX, e.clientY, 'hit');
+
+            clearTimeout(hideTimeout);
+            isVisible = false;
+            targetEl.classList.remove('visible');
+
+            // Sequential gap
+            gameLoopTimeout = setTimeout(spawnMouse, config.gap);
+        }
+
+        function handleBackgroundClick(e) {
+            if (!isRunning || isPaused) return;
+            handleMiss(e.clientX, e.clientY, false);
+        }
+
+        function handleMiss(x, y, isTimeout) {
+            stats.misses++;
+            stats.currentStreak = 0;
+
+            if (!isTimeout) {
+                addFloatingText('Miss', x, y, 'miss');
+            }
+        }
+
+        function addFloatingText(text, x, y, type) {
+            const el = document.createElement('div');
+            el.className = 'floating-text';
+            el.innerText = text;
+            el.style.left = x + 'px';
+            el.style.top = y + 'px';
+            el.style.color = type === 'hit' ? '#4ade80' : '#ef4444';
+            document.body.appendChild(el);
+            setTimeout(() => el.remove(), 1000);
+        }
+
+        function pauseGame() {
+            if (!isRunning) return;
+            isPaused = true;
+            document.getElementById('pauseOverlay').style.display = 'flex';
+            clearTimeout(gameLoopTimeout);
+            clearTimeout(hideTimeout);
+        }
+
+        function resumeGame() {
+            isPaused = false;
+            document.getElementById('pauseOverlay').style.display = 'none';
+            spawnMouse();
+        }
+
+        async function endGame() {
+            isRunning = false;
+            clearInterval(countdownInterval);
+            clearTimeout(gameLoopTimeout);
+            clearTimeout(hideTimeout);
+            targetEl.classList.remove('visible');
+
+            const total = stats.hits + stats.misses;
+            const accuracy = total > 0 ? (stats.hits / total) * 100 : 0;
+            const avgRT = stats.reactionTimes.length > 0 ?
+                stats.reactionTimes.reduce((a, b) => a + b, 0) / stats.reactionTimes.length : 0;
+
+            // Update UI
+            document.getElementById('levelNameDisplay').innerText = config.name;
+            document.getElementById('finalScore').innerText = score;
+            document.getElementById('resAccuracy').innerText = accuracy.toFixed(1) + '%';
+            document.getElementById('resAvgRT').innerText = Math.round(avgRT) + 'ms';
+            document.getElementById('resStreak').innerText = stats.bestStreak;
+            document.getElementById('resMisses').innerText = stats.misses;
+
+            // Calculate Stars (1-5 based on accuracy)
+            let stars = 0;
+            if (accuracy >= 95) stars = 5;
+            else if (accuracy >= 85) stars = 4;
+            else if (accuracy >= 75) stars = 3;
+            else if (accuracy >= 60) stars = 2;
+            else if (accuracy >= 30) stars = 1;
+
+            if (typeof displayStars === 'function') {
+                displayStars('starContainer', stars);
+            }
+
+            document.getElementById('resultsOverlay').style.display = 'flex';
+
+            // Submit
+            await submitResult({
+                game_name: "Mouse Tap",
+                score: score,
+                accuracy: accuracy,
+                avg_time: Math.round(avgRT),
+                correct_count: stats.hits,
+                level_info: config.name
+            });
+
+            // Show History Dataset
+            if (typeof getGameResults === 'function' && typeof renderResultsTable === 'function') {
+                const recentResults = await getGameResults();
+                renderResultsTable(recentResults, 'historyContainer', 10);
+            }
+        }
+
+        // Auto-start
+        setTimeout(startGame, 500);
+    </script>
+</body>
+
+</html>

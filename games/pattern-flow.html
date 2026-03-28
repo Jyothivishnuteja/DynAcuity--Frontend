@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pattern Flow | DynAcuity</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Outfit:wght@700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="../css/index.css">
+    <style>
+        .game-container {
+            height: 100vh;
+            background: #000;
+            overflow: hidden;
+            position: relative;
+            transition: background-color 0.1s ease;
+        }
+
+        #flowArea {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .flow-shape {
+            position: absolute;
+            opacity: 0.3;
+            background: #E5E5E5;
+            pointer-events: none;
+            will-change: transform;
+        }
+
+        .active-target {
+            position: absolute;
+            opacity: 1.0;
+            cursor: pointer;
+            z-index: 10;
+            will-change: transform;
+        }
+
+        .stats-overlay {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            color: #fff;
+            font-family: 'Outfit';
+            z-index: 50;
+        }
+
+        .speed-selector {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: center;
+            margin-bottom: 2rem;
+        }
+
+        .speed-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: 'Outfit';
+            transition: 0.2s;
+        }
+
+        .speed-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .speed-btn.active {
+            background: var(--primary-purple);
+            border-color: var(--primary-purple);
+            transform: scale(1.1);
+        }
+
+        .center-msg {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            z-index: 100;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="game-container" id="gameContainer">
+        <div id="flowArea"></div>
+
+        <div class="stats-overlay" style="display: flex; gap: 1rem; align-items: center;">
+            <a href="index.html" style="color: #fff; text-decoration: none; opacity: 0.8; font-size: 1.2rem;">←</a>
+            <div style="width: 1px; height: 15px; background: rgba(255,255,255,0.2);"></div>
+            <span>Time: <span id="timeVal" style="color: var(--primary-purple);">60s</span></span>
+            <span style="color: #888;">|</span>
+            <span>Score: <span id="scoreVal" style="color: var(--primary-purple);">0</span></span>
+            <div style="width: 1px; height: 15px; background: rgba(255,255,255,0.2);"></div>
+            <span style="color: #888; font-size: 0.8rem;">VIDEO MODE</span>
+        </div>
+
+        <div id="startOverlay" class="center-msg">
+            <h1 style="font-size: 3.5rem; color: #fff; margin-bottom: 2rem;">PATTERN FLOW</h1>
+            <p style="color: #888; margin-bottom: 1.5rem; max-width: 400px; margin-left: auto; margin-right: auto;">
+                Experience a continuous visual flow. Tap the targets that match the shadows. Focus on speed and precision.
+            </p>
+
+            <div class="speed-selector">
+                <button class="speed-btn active" onclick="setSpeed(1, this)">1x</button>
+                <button class="speed-btn" onclick="setSpeed(2, this)">2x</button>
+                <button class="speed-btn" onclick="setSpeed(3, this)">3x</button>
+                <button class="speed-btn" onclick="setSpeed(5, this)">5x</button>
+                <button class="speed-btn" onclick="setSpeed(6, this)">6x</button>
+            </div>
+
+            <button onclick="startGame()" class="btn btn-primary pulse-primary"
+                style="padding: 1.25rem 4rem; font-size: 1.2rem;">Start Flow</button>
+        </div>
+
+        <!-- Results Overlay -->
+        <div id="resultsOverlay" class="overlay" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 200; flex-direction: column; align-items: center; justify-content: center; text-align: center;">
+            <h2 style="font-size: 3rem; margin-bottom: 1rem; font-family: 'Outfit'; color: #fff;">Flow Complete</h2>
+            <div style="display: flex; gap: 2rem; margin-bottom: 2rem;">
+                <div><label style="display:block; color:#888; font-size:0.8rem;">SCORE</label><span id="resScore" style="font-size:2rem; color:#fff;">0</span></div>
+                <div><label style="display:block; color:#888; font-size:0.8rem;">ACCURACY</label><span id="resAccuracy" style="font-size:2rem; color:#fff;">0%</span></div>
+            </div>
+            
+            <div style="font-size: 0.8rem; font-weight: 800; color: #a1a1aa; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 0.5rem; text-align: left;">Performance Dataset (db.sqlite)</div>
+            <div id="historyContainer" style="width: 100%; max-width: 400px; margin-bottom: 2rem;"></div>
+
+            <div style="display: flex; gap: 1rem;">
+                <button onclick="location.reload()" class="btn btn-outline" style="min-width: 150px;">Retry</button>
+                <button onclick="window.location.href='index.html'" class="btn btn-primary" style="min-width: 150px;">Exit</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/auth.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const user = JSON.parse(localStorage.getItem('dynacuity_user'));
+            if (user && user.full_name) {
+                document.getElementById('userName').innerText = user.full_name;
+            }
+        });
+
+        const flowArea = document.getElementById('flowArea');
+        const gameContainer = document.getElementById('gameContainer');
+
+        let isRunning = false;
+        let score = 0;
+        let hits = 0;
+        let misses = 0;
+        let timeLeft = 60;
+
+        // Current Multiplier
+        let currentMultiplier = 1;
+
+        // Game Entities
+        let shadowShapes = [];
+        let currentTarget = null;
+        let targetParent = null;
+
+        // Constants and Dynamic variables
+        const SHAPE_COUNT = 40;
+        const BASE_TARGET_LIFETIME = 800;
+        const BASE_SPAWN_INTERVAL = 600;
+        const COLORS = ['#3b82f6', '#22c55e', '#ef4444', '#a855f7'];
+        const BASE_SCROLL_SPEED = 2;
+
+        let targetLifetime = BASE_TARGET_LIFETIME;
+        let spawnInterval = BASE_SPAWN_INTERVAL;
+        let scrollSpeed = BASE_SCROLL_SPEED;
+
+        let animationFrameId;
+        let spawnTimerId;
+        let gameTimerId;
+
+        function setSpeed(mult, btn) {
+            currentMultiplier = mult;
+            scrollSpeed = BASE_SCROLL_SPEED * mult;
+            targetLifetime = BASE_TARGET_LIFETIME / mult;
+            spawnInterval = BASE_SPAWN_INTERVAL / mult;
+
+            // UI Update
+            document.querySelectorAll('.speed-btn').forEach(b => b.classList.remove('active'));
+            if (btn) btn.classList.add('active');
+            // document.getElementById('speedDisplay').innerText = mult + 'x'; // Removed from new HUD
+
+            // Sync BGM Speed
+            if (typeof SoundManager !== 'undefined') {
+                SoundManager.setBGMSpeed(mult);
+            }
+
+            // Restart spawning if running to apply new interval
+            if (isRunning) {
+                clearInterval(spawnTimerId);
+                spawnTimerId = setInterval(() => {
+                    if (isRunning && !currentTarget) spawnTarget();
+                }, spawnInterval);
+            }
+        }
+        
+        // Background click = Miss
+        gameContainer.onmousedown = (e) => {
+            if (!isRunning || e.target !== flowArea) return;
+            misses++;
+            // score = Math.max(0, score - 1);
+            // document.getElementById('scoreVal').innerText = score;
+        };
+
+        function createShape(isShadow) {
+            const size = 30 + Math.random() * 30;
+            const shapeType = Math.floor(Math.random() * 2);
+            const isRoundedRect = shapeType === 1 && Math.random() > 0.5;
+
+            const shape = {
+                el: document.createElement('div'),
+                x: Math.random() * (window.innerWidth - size),
+                y: Math.random() * (window.innerHeight - size),
+                size: size,
+                rotation: Math.random() * 360,
+                rotationSpeed: (Math.random() - 0.5) * 5.0,
+                shapeType: shapeType,
+                isRoundedRect: isRoundedRect
+            };
+
+            shape.el.style.width = `${size}px`;
+            shape.el.style.height = `${size}px`;
+            shape.el.style.left = '0px';
+            shape.el.style.top = '0px';
+
+            if (shapeType === 0) {
+                shape.el.style.borderRadius = '50%';
+            } else if (isRoundedRect) {
+                shape.el.style.borderRadius = `${size / 2}px`;
+            }
+
+            if (isShadow) {
+                shape.el.className = 'flow-shape';
+            } else {
+                shape.el.className = 'active-target';
+                const color = COLORS[Math.floor(Math.random() * COLORS.length)];
+                shape.el.style.backgroundColor = color;
+                shape.el.style.boxShadow = `0 0 15px ${color}`;
+            }
+
+            return shape;
+        }
+
+        function initShadows() {
+            flowArea.innerHTML = '';
+            shadowShapes = [];
+            for (let i = 0; i < SHAPE_COUNT; i++) {
+                const s = createShape(true);
+                shadowShapes.push(s);
+                flowArea.appendChild(s.el);
+            }
+        }
+
+        function spawnTarget() {
+            if (!isRunning || currentTarget !== null || shadowShapes.length === 0) return;
+
+            targetParent = shadowShapes[Math.floor(Math.random() * shadowShapes.length)];
+            currentTarget = createShape(false);
+
+            currentTarget.size = targetParent.size;
+            currentTarget.el.style.width = `${currentTarget.size}px`;
+            currentTarget.el.style.height = `${currentTarget.size}px`;
+            currentTarget.el.style.borderRadius = targetParent.el.style.borderRadius;
+
+            currentTarget.el.onmousedown = (e) => {
+                e.stopPropagation();
+                handleHit();
+            };
+            currentTarget.el.ontouchstart = (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                handleHit();
+            };
+
+            currentTarget.spawnTime = Date.now();
+            flowArea.appendChild(currentTarget.el);
+        }
+
+        function handleHit() {
+            if (!isRunning || !currentTarget) return;
+
+            hits++;
+            score++;
+            document.getElementById('scoreVal').innerText = score;
+
+            // Flash feedback
+            gameContainer.style.backgroundColor = 'rgba(108, 99, 255, 0.2)';
+            setTimeout(() => {
+                gameContainer.style.backgroundColor = '#000';
+            }, 50);
+
+            currentTarget.el.remove();
+            currentTarget = null;
+            targetParent = null;
+        }
+
+        function updatePositions() {
+            if (!isRunning) return;
+
+            const w = window.innerWidth;
+            const h = window.innerHeight;
+
+            shadowShapes.forEach(s => {
+                s.y += scrollSpeed;
+                if (s.y > h) {
+                    s.y = -s.size;
+                    s.x = Math.random() * (w - s.size);
+                }
+                s.rotation += s.rotationSpeed;
+                s.el.style.transform = `translate(${s.x}px, ${s.y}px) rotate(${s.rotation}deg)`;
+            });
+
+            if (currentTarget && targetParent) {
+                currentTarget.x = targetParent.x;
+                currentTarget.y = targetParent.y;
+                currentTarget.rotation = targetParent.rotation;
+
+                currentTarget.el.style.transform = `translate(${currentTarget.x}px, ${currentTarget.y}px) rotate(${currentTarget.rotation}deg)`;
+
+                if (Date.now() - currentTarget.spawnTime > targetLifetime) {
+                    currentTarget.el.remove();
+                    currentTarget = null;
+                    targetParent = null;
+                }
+            }
+        }
+
+        function gameLoop() {
+            if (!isRunning) return;
+            updatePositions();
+            animationFrameId = requestAnimationFrame(gameLoop);
+        }
+
+        function startGame() {
+            document.getElementById('startOverlay').style.display = 'none';
+            isRunning = true;
+            score = 0;
+            hits = 0;
+            misses = 0;
+            timeLeft = 60;
+            document.getElementById('scoreVal').innerText = '0';
+            document.getElementById('timeVal').innerText = '60s';
+
+            if (typeof SoundManager !== 'undefined') {
+                SoundManager.startBGM();
+                SoundManager.setBGMSpeed(currentMultiplier);
+            }
+
+            initShadows();
+            gameLoop();
+
+            spawnTimerId = setInterval(() => {
+                if (isRunning && !currentTarget) {
+                    spawnTarget();
+                }
+            }, spawnInterval);
+
+            gameTimerId = setInterval(() => {
+                if (!isRunning) return clearInterval(gameTimerId);
+                timeLeft--;
+                document.getElementById('timeVal').innerText = timeLeft + 's';
+                if (timeLeft <= 0) {
+                    clearInterval(gameTimerId);
+                    endGame();
+                }
+            }, 1000);
+        }
+
+        async function endGame() {
+            isRunning = false;
+            cancelAnimationFrame(animationFrameId);
+            clearInterval(spawnTimerId);
+            clearInterval(gameTimerId);
+
+            const total = hits + misses;
+            const accuracy = total > 0 ? Math.round((hits / total) * 100) : 0;
+
+            document.getElementById('resScore').innerText = score;
+            document.getElementById('resAccuracy').innerText = accuracy + '%';
+            document.getElementById('resultsOverlay').style.display = 'flex';
+
+            // Sync with backend
+            if (typeof submitResult === 'function') {
+                await submitResult({
+                    game_name: "Pattern Flow",
+                    score: score,
+                    accuracy: accuracy,
+                    avg_time: 0,
+                    correct_count: hits,
+                    level_info: "Multiplier " + currentMultiplier + "x"
+                });
+            }
+
+            // Show History Dataset
+            if (typeof getGameResults === 'function' && typeof renderResultsTable === 'function') {
+                const recentResults = await getGameResults();
+                renderResultsTable(recentResults, 'historyContainer', 10);
+            }
+        }
+
+        // Handle resize gracefully
+        window.addEventListener('resize', () => {
+            if (isRunning) {
+                shadowShapes.forEach(s => {
+                    if (s.x > window.innerWidth) {
+                        s.x = Math.random() * (window.innerWidth - s.size);
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+
+</html>

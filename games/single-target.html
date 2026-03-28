@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Single Target | DynAcuity</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Outfit:wght@700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="../css/index.css">
+    <style>
+        .game-container {
+            height: 100vh;
+            background: #000;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            user-select: none;
+        }
+
+        #gameArea {
+            flex: 1;
+            position: relative;
+            background-color: #000;
+            overflow: hidden;
+            cursor: crosshair;
+        }
+
+        /* Target Styling */
+        .target {
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            background: radial-gradient(circle, var(--primary-purple) 0%, rgba(108, 99, 255, 0.4) 70%, transparent 100%);
+            border: 2px solid white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 10;
+            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            animation: popIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .target::after {
+            content: '';
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+        }
+
+        @keyframes popIn {
+            from {
+                transform: scale(0);
+                opacity: 0;
+            }
+
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        /* Floating Text Feedback */
+        .feedback {
+            position: absolute;
+            pointer-events: none;
+            color: white;
+            font-family: 'Outfit';
+            font-weight: 700;
+            font-size: 1.5rem;
+            z-index: 20;
+            animation: fadeUp 0.8s forwards;
+        }
+
+        @keyframes fadeUp {
+            0% {
+                transform: translateY(0);
+                opacity: 1;
+            }
+
+            100% {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+        }
+
+        .stats-bar {
+            padding: 1rem 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #000;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            z-index: 100;
+        }
+
+        .back-btn {
+            color: #fff;
+            text-decoration: none;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.05);
+            transition: 0.3s;
+        }
+
+        .stat-item {
+            text-align: center;
+            min-width: 80px;
+        }
+
+        .stat-label {
+            display: block;
+            font-size: 0.7rem;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 0.1rem;
+        }
+
+        .stat-value {
+            font-family: 'Outfit';
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 200;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 2rem;
+            backdrop-filter: blur(5px);
+        }
+
+        #bgCanvas {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            opacity: 0.3;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="game-container">
+        <div class="stats-bar">
+            <a href="index.html" class="back-btn">←</a>
+            <div class="stat-item">
+                <span class="stat-label">TIME</span>
+                <span id="timeVal" class="stat-value">60s</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">SCORE</span>
+                <span id="scoreVal" class="stat-value">0</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">STREAK</span>
+                <span id="streakVal" class="stat-value">0</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">LEVEL</span>
+                <span id="levelVal" class="stat-value" style="color: var(--primary-purple);">1</span>
+            </div>
+        </div>
+
+        <div id="gameArea">
+            <canvas id="bgCanvas"></canvas>
+        </div>
+
+        <!-- Start Overlay -->
+        <div id="startOverlay" class="overlay">
+            <div style="font-size: 4rem; margin-bottom: 1rem;">◎</div>
+            <h1 style="font-size: 3rem; margin-bottom: 0.5rem; font-family: 'Outfit';">Single Target</h1>
+            <p style="color: #888; margin-bottom: 2.5rem; max-width: 450px;">
+                Tap the targets as soon as they appear. Don't miss. Focus on speed and precision.
+            </p>
+            <button onclick="startGame()" class="btn btn-primary pulse-primary" style="padding: 1.25rem 4rem;">Start
+                Game</button>
+        </div>
+
+        <!-- Results Overlay -->
+        <div id="resultsOverlay" class="overlay" style="display: none;">
+            <h2 style="font-size: 3.5rem; margin-bottom: 1.5rem; font-family: 'Outfit';">Session Complete</h2>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem; width: 350px;">
+                <div class="stat-item">
+                    <span class="stat-label">Final Score</span>
+                    <span id="resScore" class="stat-value" style="font-size: 2.5rem;">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Accuracy</span>
+                    <span id="resAccuracy" class="stat-value" style="font-size: 2.5rem;">0%</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Avg Reaction</span>
+                    <span id="resRT" class="stat-value" style="font-size: 2rem;">0ms</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Best Streak</span>
+                    <span id="resStreak" class="stat-value" style="font-size: 2rem;">0</span>
+                </div>
+            </div>
+
+            <div style="font-size: 0.8rem; font-weight: 800; color: #a1a1aa; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 0.5rem; text-align: left;">Performance Dataset (db.sqlite)</div>
+            <div id="historyContainer" style="width: 100%; max-width: 400px; margin-bottom: 2rem;"></div>
+
+            <div style="display: flex; gap: 1rem;">
+                <button onclick="location.reload()" class="btn btn-outline" style="min-width: 150px;">Retry</button>
+                <button onclick="window.location.href='index.html'" class="btn btn-primary"
+                    style="min-width: 150px;">Exit</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/auth.js"></script>
+    <script>
+        // Game State
+        let isRunning = false;
+        let timeLeft = 60;
+        let score = 0;
+        let hits = 0;
+        let misses = 0;
+        let streak = 0;
+        let bestStreak = 0;
+        let level = 1;
+        let totalRT = 0;
+        let currentTarget = null;
+        let spawnTimeout = null;
+        let targetTimeout = null;
+
+        // Difficulty Settings
+        let gapDuration = 1500;
+        let visibleDuration = 1000;
+
+        const gameArea = document.getElementById('gameArea');
+        const bgCanvas = document.getElementById('bgCanvas');
+        const bgCtx = bgCanvas.getContext('2d');
+
+        function resizeCanvas() {
+            bgCanvas.width = gameArea.clientWidth;
+            bgCanvas.height = gameArea.clientHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        function drawBackground() {
+            if (!isRunning) return;
+            const w = bgCanvas.width;
+            const h = bgCanvas.height;
+            bgCtx.clearRect(0, 0, w, h);
+
+            // Subtle Grid
+            bgCtx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
+            bgCtx.lineWidth = 1;
+            const step = 60;
+            for (let x = 0; x < w; x += step) {
+                bgCtx.beginPath(); bgCtx.moveTo(x, 0); bgCtx.lineTo(x, h); bgCtx.stroke();
+            }
+            for (let y = 0; y < h; y += step) {
+                bgCtx.beginPath(); bgCtx.moveTo(0, y); bgCtx.lineTo(w, y); bgCtx.stroke();
+            }
+            requestAnimationFrame(drawBackground);
+        }
+
+        function startGame() {
+            document.getElementById('startOverlay').style.display = 'none';
+            isRunning = true;
+            resizeCanvas();
+            drawBackground();
+            startTimer();
+            scheduleNextSpawn(500);
+        }
+
+        function startTimer() {
+            const timer = setInterval(() => {
+                if (!isRunning) return clearInterval(timer);
+                timeLeft--;
+                document.getElementById('timeVal').innerText = timeLeft + 's';
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    endGame();
+                }
+            }, 1000);
+        }
+
+        function scheduleNextSpawn(delay) {
+            if (!isRunning) return;
+            spawnTimeout = setTimeout(spawnTarget, delay);
+        }
+
+        function spawnTarget() {
+            if (!isRunning) return;
+
+            // Clean up previous
+            if (currentTarget) removeTarget(false);
+
+            const target = document.createElement('div');
+            target.className = 'target';
+
+            const size = level >= 4 ? 60 : 80;
+            target.style.width = size + 'px';
+            target.style.height = size + 'px';
+
+            const maxX = gameArea.clientWidth - size;
+            const maxY = gameArea.clientHeight - size;
+            const x = Math.random() * maxX;
+            const y = Math.random() * maxY;
+
+            target.style.left = x + 'px';
+            target.style.top = y + 'px';
+
+            const spawnTime = Date.now();
+            target.onclick = (e) => {
+                e.stopPropagation();
+                handleHit(spawnTime);
+            };
+
+            gameArea.appendChild(target);
+            currentTarget = target;
+
+            targetTimeout = setTimeout(() => {
+                if (currentTarget === target) {
+                    removeTarget(false);
+                    scheduleNextSpawn(gapDuration);
+                }
+            }, visibleDuration);
+        }
+
+        function handleHit(spawnTime) {
+            const rt = Date.now() - spawnTime;
+            totalRT += rt;
+            hits++;
+            score++;
+            streak++;
+            if (streak > bestStreak) bestStreak = streak;
+
+            const rect = currentTarget.getBoundingClientRect();
+            showFeedback('+1', rect.left, rect.top, '#fff');
+
+            removeTarget(true);
+            updateDifficulty();
+            updateUI();
+            scheduleNextSpawn(gapDuration);
+        }
+
+        function removeTarget(wasHit) {
+            if (!currentTarget) return;
+            if (!wasHit) {
+                streak = 0;
+                misses++;
+                updateUI();
+            }
+            gameArea.removeChild(currentTarget);
+            currentTarget = null;
+            clearTimeout(targetTimeout);
+        }
+
+        // Background click = Miss
+        gameArea.onclick = (e) => {
+            if (!isRunning || e.target !== gameArea) return;
+            streak = 0;
+            misses++;
+            updateUI();
+            showFeedback('Miss', e.clientX, e.clientY, '#ff4757');
+        };
+
+        function updateDifficulty() {
+            const newLevel = 1 + Math.floor(hits / 10);
+            level = Math.min(newLevel, 5);
+
+            switch (level) {
+                case 1: gapDuration = 1500; visibleDuration = 1000; break;
+                case 2: gapDuration = 1000; visibleDuration = 800; break;
+                case 3: gapDuration = 700; visibleDuration = 600; break;
+                case 4: gapDuration = 500; visibleDuration = 500; break;
+                case 5: gapDuration = 400; visibleDuration = 400; break;
+            }
+        }
+
+        function updateUI() {
+            document.getElementById('scoreVal').innerText = score;
+            document.getElementById('streakVal').innerText = streak;
+            document.getElementById('levelVal').innerText = level;
+        }
+
+        function showFeedback(text, x, y, color) {
+            const f = document.createElement('div');
+            f.className = 'feedback';
+            f.innerText = text;
+            f.style.color = color;
+            f.style.left = x + 'px';
+            f.style.top = (y - 50) + 'px';
+            document.body.appendChild(f);
+            setTimeout(() => document.body.removeChild(f), 800);
+        }
+
+        async function endGame() {
+            isRunning = false;
+            if (currentTarget) gameArea.removeChild(currentTarget);
+            clearTimeout(spawnTimeout);
+            clearTimeout(targetTimeout);
+
+            const totalSpawns = hits + misses;
+            const accuracy = totalSpawns > 0 ? Math.round((hits / totalSpawns) * 100) : 0;
+            const avgRT = hits > 0 ? Math.round(totalRT / hits) : 0;
+
+            document.getElementById('resScore').innerText = score;
+            document.getElementById('resAccuracy').innerText = accuracy + '%';
+            document.getElementById('resRT').innerText = avgRT + 'ms';
+            document.getElementById('resStreak').innerText = bestStreak;
+
+            document.getElementById('resultsOverlay').style.display = 'flex';
+
+            // Sync with backend
+            await submitResult({
+                game_name: "Single Target",
+                score: score,
+                accuracy: accuracy,
+                avg_time: avgRT,
+                correct_count: hits,
+                level_info: "Level " + level
+            });
+
+            // Show History Dataset
+            if (typeof getGameResults === 'function' && typeof renderResultsTable === 'function') {
+                const recentResults = await getGameResults();
+                renderResultsTable(recentResults, 'historyContainer', 10);
+            }
+        }
+    </script>
+</body>
+
+
+</html>

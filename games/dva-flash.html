@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic Visual Acuity Training | DynAcuity</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Outfit:wght@700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="../css/index.css">
+    <style>
+        .game-container {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: #000;
+            overflow: hidden;
+        }
+
+        .flash-stage {
+            height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 2rem;
+            background: #111;
+            border: 4px solid #333;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: inset 0 0 20px #000;
+        }
+
+        .led-board {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .led-box {
+            width: 80dp;
+            /* using standard sizing */
+            width: 100px;
+            height: 120px;
+            background: #050505;
+            border: 2px solid #222;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 6rem;
+            font-family: 'Outfit', sans-serif;
+            color: #ef4444;
+            text-shadow: 0 0 15px rgba(239, 68, 68, 0.6);
+            opacity: 0.1;
+            /* Dim when inactive */
+            transition: all 0.05s ease;
+        }
+
+        .led-box.active {
+            opacity: 1;
+            background: #1a0000;
+            border-color: #ef4444;
+            box-shadow: 0 0 20px rgba(239, 68, 68, 0.3);
+            transform: scale(1.05);
+        }
+
+        .input-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.5rem;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .input-display {
+            width: 100%;
+            padding: 1rem;
+            background: var(--surface-dark);
+            border: 2px solid var(--glass-border);
+            border-radius: var(--radius-md);
+            text-align: center;
+            font-size: 2rem;
+            letter-spacing: 0.5rem;
+            min-height: 4rem;
+        }
+
+        .numpad {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 0.5rem;
+            width: 100%;
+        }
+
+        .num-btn {
+            background: var(--surface-light);
+            border: 1px solid var(--glass-border);
+            color: white;
+            padding: 1rem 0.5rem;
+            border-radius: var(--radius-sm);
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: 0.1s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 45px;
+        }
+
+        .num-btn.accent {
+            background: var(--primary-purple);
+            grid-column: span 2;
+        }
+
+        .num-btn:active {
+            background: var(--primary-purple);
+            transform: scale(0.95);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="game-container">
+        <div class="status-bar">
+            <a href="index.html" style="color: #fff; text-decoration: none;">← Back</a>
+            <span style="color: #ef4444; font-weight: 600;"><span id="userName">User</span>'s Dynamic Training</span>
+            <span>Level: <span id="levelDisplay">1</span></span>
+            <span>Score: <span id="scoreDisplay">0</span></span>
+        </div>
+
+        <div class="flash-stage">
+            <div class="led-board" id="ledBoard">
+                <div class="led-box" id="box0"></div>
+                <div class="led-box" id="box1"></div>
+                <div class="led-box" id="box2"></div>
+                <div class="led-box" id="box3" style="display: none;"></div>
+            </div>
+        </div>
+
+        <div class="input-area">
+            <div id="inputDisplay" class="input-display"></div>
+            <div class="numpad" id="keypad">
+                <!-- Programmatically filled -->
+            </div>
+            <button class="btn btn-outline" style="width: 100%;" onclick="clearInput()">Clear Answer</button>
+        </div>
+
+        <div id="countdown" class="flex-center"
+            style="position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 100; font-size: 10rem; font-family: 'Outfit';">
+            3</div>
+
+        <div id="resultsOverlay" class="glass"
+            style="display: none; position: fixed; inset: 0; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; background: rgba(0,0,0,0.95);">
+            <h2 style="font-size: 3rem; margin-bottom: 0.5rem;">Session Over</h2>
+            <div id="starContainer"></div>
+            <div style="text-align: center; margin-bottom: 3rem;">
+                <p style="font-size: 4rem; color: var(--primary-purple); font-weight: 700;" id="finalScore">0</p>
+                <p style="color: var(--text-secondary);">Total Score</p>
+            </div>
+            <button onclick="window.location.href='../dashboard.html'" class="btn btn-primary"
+                style="padding: 1rem 3rem;">Return to Dashboard</button>
+        </div>
+    </div>
+
+    <script src="../js/auth.js"></script>
+    <script>
+        // Parse URL params
+        const urlParams = new URLSearchParams(window.location.search);
+        let levelName = urlParams.get('name') || "Level 1.0x";
+        let levelMultiplier = parseFloat(urlParams.get('mult')) || 1.0;
+
+        const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const user = JSON.parse(localStorage.getItem('dynacuity_user'));
+            if (user && user.full_name) {
+                document.getElementById('userName').innerText = user.full_name;
+            }
+
+            // Generate Keypad
+            const keypad = document.getElementById('keypad');
+            chars.split('').forEach(char => {
+                const btn = document.createElement('button');
+                btn.className = 'num-btn';
+                btn.innerText = char;
+                btn.onclick = () => addInput(char);
+                keypad.appendChild(btn);
+            });
+        });
+
+        // Keyboard Support
+        window.addEventListener('keydown', (e) => {
+            if (isFlashing) return;
+            const key = e.key.toUpperCase();
+            if (chars.includes(key)) {
+                addInput(key);
+            } else if (e.key === 'Backspace') {
+                clearInput();
+            }
+        });
+
+        let level = 1;
+        let score = 0;
+        let currentSequence = "";
+        let userInput = "";
+        let isFlashing = false;
+        let totalRounds = 10;
+        let roundsPlayed = 0;
+        let currentSpeed = 1.5 * levelMultiplier; // Scaled by URL selection
+
+        const boardEl = document.getElementById('ledBoard');
+        const displayEl = document.getElementById('inputDisplay');
+
+        function clearInput() {
+            userInput = "";
+            displayEl.innerText = "";
+        }
+
+        async function startCountdown() {
+            const countEl = document.getElementById('countdown');
+            for (let i = 3; i > 0; i--) {
+                countEl.innerText = i;
+                await new Promise(r => setTimeout(r, 1000));
+            }
+            countEl.style.display = 'none';
+            playRound();
+        }
+
+        async function playRound() {
+            if (roundsPlayed >= totalRounds) {
+                finishGame();
+                return;
+            }
+
+            isFlashing = true;
+            userInput = "";
+            displayEl.innerText = "";
+
+            // Dynamic scaling across rounds + difficulty mult
+            currentSpeed = (1.5 + (roundsPlayed * 0.15)) * levelMultiplier;
+            document.getElementById('levelDisplay').innerText = levelName;
+
+            // Generate sequence
+            const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+            // More characters on higher base difficulty
+            const seqLength = (roundsPlayed < 8 && levelMultiplier < 3) ? 3 : 4;
+
+            currentSequence = Array.from({ length: seqLength }, () => chars.charAt(Math.floor(Math.random() * chars.length))).join('');
+
+            // Setup Board
+            const boxes = [document.getElementById('box0'), document.getElementById('box1'), document.getElementById('box2'), document.getElementById('box3')];
+            boxes.forEach((box, idx) => {
+                box.innerText = "";
+                box.classList.remove('active');
+                box.style.display = (idx < seqLength) ? 'flex' : 'none';
+            });
+
+            // Sequential display logic: Left to Right moving (Bus board style)
+            const baseFlashTime = 1000;
+            const flashDuration = (baseFlashTime / currentSpeed) / seqLength;
+
+            for (let i = 0; i < currentSequence.length; i++) {
+                const currentBox = boxes[i];
+                currentBox.innerText = currentSequence[i];
+                currentBox.classList.add('active');
+
+                await new Promise(r => setTimeout(r, flashDuration));
+
+                currentBox.classList.remove('active');
+                currentBox.innerText = ""; // Disappear before next one shows
+                await new Promise(r => setTimeout(r, 50));
+            }
+
+            isFlashing = false;
+        }
+
+        function addInput(num) {
+            if (isFlashing) return;
+
+            userInput += num;
+            displayEl.innerText = userInput;
+
+            if (userInput.length === currentSequence.length) {
+                checkAnswer();
+            }
+        }
+
+        function checkAnswer() {
+            if (userInput === currentSequence) {
+                score += level * 100;
+                level++;
+                document.getElementById('scoreDisplay').innerText = score;
+                document.getElementById('levelDisplay').innerText = level;
+            } else {
+                // Mistake feedback? 
+            }
+            roundsPlayed++;
+            setTimeout(playRound, 1000);
+        }
+
+        async function finishGame() {
+            document.getElementById('finalScore').innerText = score;
+
+            const accuracy = (score / (totalRounds * level * 100)) * 100;
+            const stars = calculateStars(accuracy);
+            displayStars('starContainer', stars);
+
+            document.getElementById('resultsOverlay').style.display = 'flex';
+
+            await submitResult({
+                game_name: "DVA Flash",
+                score: score,
+                accuracy: (score / (totalRounds * level * 100)) * 100, // rough
+                avg_time: 0,
+                correct_count: level - 1,
+                level_info: levelName
+            });
+        }
+
+        startCountdown();
+    </script>
+</body>
+
+</html>

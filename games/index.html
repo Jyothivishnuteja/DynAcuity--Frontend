@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Training Suite | DynAcuity</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Outfit:wght@700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="../css/index.css">
+    <link rel="stylesheet" href="../css/dashboard.css">
+    <style>
+        .games-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.25rem;
+            margin-top: 2rem;
+            padding-bottom: 6rem;
+        }
+
+        .game-list-item {
+            display: flex;
+            align-items: center;
+            background: var(--surface-dark);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-lg);
+            padding: 1.25rem;
+            cursor: pointer;
+            transition: var(--transition-fast);
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .game-list-item:hover {
+            transform: translateY(-4px);
+            background: var(--glass-white);
+            border-color: var(--primary-purple);
+        }
+
+        .game-icon-box {
+            width: 54px;
+            height: 54px;
+            background: rgba(108, 99, 255, 0.1);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-right: 1.25rem;
+        }
+
+        .game-info-box {
+            flex: 1;
+        }
+
+        .game-info-box h3 {
+            font-family: 'Outfit';
+            font-size: 1.1rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .game-info-box p {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            line-height: 1.4;
+        }
+
+        .chevron {
+            color: var(--text-secondary);
+            font-size: 1.2rem;
+            margin-left: 1rem;
+        }
+
+        .game-meta {
+            margin-top: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .star-rating {
+            color: #fbbf24;
+            letter-spacing: 2px;
+            font-size: 0.8rem;
+        }
+
+        .game-stat-small {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            background: rgba(255, 255, 255, 0.05);
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="dashboard-container">
+        <header class="animate-fade-in">
+            <h1 style="font-size: 2.25rem; margin-bottom: 0.5rem;">Training Suite</h1>
+            <p style="color: var(--text-secondary); font-size: 0.95rem;">Welcome, <span id="userName">User</span>!
+                Select a cognitive exercise to begin.</p>
+        </header>
+
+        <div class="games-grid animate-fade-in" style="animation-delay: 0.1s;">
+            <a href="level-select.html?game=single-target" class="game-list-item">
+                <div class="game-icon-box" style="background: rgba(108, 99, 255, 0.1); color: #6c63ff;">◎</div>
+                <div class="game-info-box">
+                    <h3>Single Target</h3>
+                    <p>Tap targets as they appear. Speed and accuracy are key.</p>
+                </div>
+                <div class="chevron">›</div>
+            </a>
+
+            <a href="level-select.html?game=selective-attention" class="game-list-item">
+                <div class="game-icon-box" style="background: rgba(59, 130, 246, 0.1); color: #3b82f6;">👁️</div>
+                <div class="game-info-box">
+                    <h3>Selective Attention</h3>
+                    <p>Tap only the black targets. Ignore distractions.</p>
+                </div>
+                <div class="chevron">›</div>
+            </a>
+
+            <a href="level-select.html?game=shape-match" class="game-list-item">
+                <div class="game-icon-box" style="background: rgba(245, 158, 11, 0.1); color: #f59e0b;">🧩</div>
+                <div class="game-info-box">
+                    <h3>Shape Match</h3>
+                    <p>Find matching shapes in the grid from memory.</p>
+                </div>
+                <div class="chevron">›</div>
+            </a>
+
+            <a href="level-select.html?game=dva-flash" class="game-list-item">
+                <div class="game-icon-box" style="background: rgba(139, 92, 246, 0.1); color: #8b5cf6;">⚡</div>
+                <div class="game-info-box">
+                    <h3>DVA Flash</h3>
+                    <p>Track moving characters and recall the sequence.</p>
+                </div>
+                <div class="chevron">›</div>
+            </a>
+
+            <!-- Pattern Flow and Acuity Test don't have level selectors in Android, so they link directly -->
+            <a href="pattern-flow.html" class="game-list-item">
+                <div class="game-icon-box" style="background: rgba(16, 185, 129, 0.1); color: #10b981;">🌀</div>
+                <div class="game-info-box">
+                    <h3>Pattern Flow</h3>
+                    <p>Spot high-speed targets in shifting shadows.</p>
+                </div>
+                <div class="chevron">›</div>
+            </a>
+
+            <a href="eye-training.html" class="game-list-item">
+                <div class="game-icon-box" style="background: rgba(251, 191, 36, 0.1); color: #fbbf24;">👁️</div>
+                <div class="game-info-box">
+                    <h3>Eye Training</h3>
+                    <p>High-speed tracking exercise with dynamic patterns.</p>
+                </div>
+                <div class="chevron">›</div>
+            </a>
+
+            <a href="level-select.html?game=mouse-tap" class="game-list-item">
+                <div class="game-icon-box" style="background: rgba(236, 72, 153, 0.1); color: #ec4899;">🖱️</div>
+                <div class="game-info-box">
+                    <h3>Mouse Tap</h3>
+                    <p>High-precision accuracy trainer with dynamic difficulties.</p>
+                </div>
+                <div class="chevron">›</div>
+            </a>
+
+            <a href="boxing.html" class="game-list-item">
+                <div class="game-icon-box" style="background: rgba(220, 38, 38, 0.1); color: #dc2626;">🥊</div>
+                <div class="game-info-box">
+                    <h3>Boxing Trainer</h3>
+                    <p>Track targets with speed. Train your tactical vision.</p>
+                </div>
+                <div class="chevron">›</div>
+            </a>
+
+            <a href="acuity.html" class="game-list-item" style="border-color: var(--primary-purple); background: rgba(108, 99, 255, 0.05);">
+                <div class="game-icon-box" style="background: rgba(239, 68, 68, 0.1); color: #ef4444;">🔬</div>
+                <div class="game-info-box">
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <h3>Acuity Test</h3>
+                        <span style="background: var(--primary-purple); color: white; font-size: 0.6rem; padding: 2px 6px; border-radius: 4px; font-weight: 700;">SMART AI</span>
+                    </div>
+                    <p>Benchmark your static visual resolution with AI distance tracking and finger detection.</p>
+                </div>
+                <div class="chevron">›</div>
+            </a>
+
+        </div>
+
+        <nav class="bottom-nav">
+            <a href="../dashboard.html" class="nav-link">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                    <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                </svg>
+                <span class="nav-label">Home</span>
+            </a>
+            <a href="index.html" class="nav-link active">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <rect x="2" y="6" width="20" height="12" rx="2"></rect>
+                    <path d="M6 12h.01M10 12h.01M15 10l-2 2 2 2M19 10l2 2-2 2"></path>
+                </svg>
+                <span class="nav-label">Games</span>
+            </a>
+            <a href="../progress.html" class="nav-link">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <line x1="18" y1="20" x2="18" y2="10"></line>
+                    <line x1="12" y1="20" x2="12" y2="4"></line>
+                    <line x1="6" y1="20" x2="6" y2="14"></line>
+                </svg>
+                <span class="nav-label">Progress</span>
+            </a>
+            <a href="../settings.html" class="nav-link">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="3"></circle>
+                    <path
+                        d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z">
+                    </path>
+                </svg>
+                <span class="nav-label">Settings</span>
+            </a>
+        </nav>
+    </div>
+    <script src="../js/sound-manager.js"></script>
+    <script src="../js/auth.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', refreshPageStats);
+
+        window.addEventListener('focus', refreshPageStats);
+
+        async function refreshPageStats() {
+            const token = localStorage.getItem('dynacuity_token');
+            if (token) {
+                try {
+                    const response = await fetch('../api/auth/user/', {
+                        headers: {
+                            'Authorization': `Token ${token}`,
+                            'ngrok-skip-browser-warning': 'true'
+                        }
+                    });
+                    if (response.ok) {
+                        const user = await response.json();
+                        localStorage.setItem('dynacuity_user', JSON.stringify(user));
+                        renderGameStats(user.game_stats);
+
+                        if (user.full_name || user.first_name || user.username) {
+                            document.getElementById('userName').innerText = user.full_name || user.first_name || user.username;
+                        }
+                        if (user.avatar) {
+                            document.getElementById('userAvatar').src = `../assets/images/${user.avatar}`;
+                        }
+                    }
+                } catch (e) {
+                    console.error("Stats fail", e);
+                }
+            }
+        }
+
+        function renderGameStats(stats) {
+            if (!stats) return;
+            const gameCards = document.querySelectorAll('.game-list-item');
+            gameCards.forEach(card => {
+                const gameName = card.querySelector('h3').innerText;
+                const data = stats[gameName];
+                if (data) {
+                    const infoBox = card.querySelector('.game-info-box');
+                    let meta = infoBox.querySelector('.game-meta');
+                    if (!meta) {
+                        meta = document.createElement('div');
+                        meta.className = 'game-meta';
+                        infoBox.appendChild(meta);
+                    }
+
+                    // Calculate Stars (1-5)
+                    let stars = 0;
+                    if (data.attempts > 0) stars = 1;
+                    if (data.avg_accuracy > 50) stars = 2;
+                    if (data.avg_accuracy > 75) stars = 3;
+                    if (data.avg_accuracy > 85) stars = 4;
+                    if (data.avg_accuracy > 95) stars = 5;
+
+                    meta.innerHTML = `
+                        <div class="star-rating">${'⭐'.repeat(stars)}${'☆'.repeat(5 - stars)}</div>
+                        <div class="game-stat-small">Best: ${data.best_score}</div>
+                    `;
+                }
+            });
+        }
+    </script>
+</body>
+
+</html>

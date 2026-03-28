@@ -1,0 +1,30 @@
+[25/Mar/2026 00:39:04] "HEAD / HTTP/1.1" 200 0
+[25/Mar/2026 00:39:15] "HEAD /auth/login.html HTTP/1.1" 200 0
+[25/Mar/2026 00:39:56] "GET / HTTP/1.1" 200 5355
+[25/Mar/2026 00:39:57] "GET /css/index.css HTTP/1.1" 200 3955
+[25/Mar/2026 00:39:57] "GET /images/logo.png HTTP/1.1" 200 26911
+[25/Mar/2026 00:39:57] "GET /js/sound-manager.js HTTP/1.1" 200 3643
+[25/Mar/2026 00:39:58] "GET /js/app.js HTTP/1.1" 200 665
+Not Found: /favicon.ico
+[25/Mar/2026 00:39:59] "GET /favicon.ico HTTP/1.1" 404 4841
+[25/Mar/2026 00:40:03] "GET /auth/login.html HTTP/1.1" 200 4939
+Not Found: /favicon.ico
+[25/Mar/2026 00:40:03] "GET /favicon.ico HTTP/1.1" 404 4841
+[25/Mar/2026 00:40:04] "GET /js/auth.js HTTP/1.1" 200 7298
+[25/Mar/2026 00:40:14] "POST /api/auth/login/ HTTP/1.1" 200 883
+[25/Mar/2026 00:40:14] "GET /dashboard.html HTTP/1.1" 200 12387
+[25/Mar/2026 00:40:15] "GET /css/dashboard.css HTTP/1.1" 200 5246
+[25/Mar/2026 00:40:16] "GET /js/auth.js?v=1.2 HTTP/1.1" 200 7298
+[25/Mar/2026 00:40:16] "GET /assets/images/avatar.png HTTP/1.1" 200 566266
+[25/Mar/2026 00:40:16] "GET /js/dashboard.js?v=1.2 HTTP/1.1" 200 2970
+[25/Mar/2026 00:40:17] "GET /api/auth/user/ HTTP/1.1" 200 823
+[25/Mar/2026 00:40:46] "GET /dashboard.html HTTP/1.1" 200 12387
+[25/Mar/2026 00:40:57] "GET /dashboard.html HTTP/1.1" 200 12387
+[25/Mar/2026 00:40:57] "GET /css/index.css HTTP/1.1" 200 3955
+[25/Mar/2026 00:40:58] "GET /css/dashboard.css HTTP/1.1" 200 5246
+[25/Mar/2026 00:40:58] "GET /js/auth.js?v=1.2 HTTP/1.1" 200 7298
+[25/Mar/2026 00:40:58] "GET /js/sound-manager.js HTTP/1.1" 200 3643
+[25/Mar/2026 00:40:58] "GET /js/dashboard.js?v=1.2 HTTP/1.1" 200 2970
+[25/Mar/2026 00:40:59] "GET /assets/images/avatar.png HTTP/1.1" 200 566266
+Not Found: /favicon.ico
+[25/Mar/2026 00:41:03] "GET /favicon.ico HTTP/1.1" 404 4841
