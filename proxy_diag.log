@@ -1,9 +1,0 @@
-Traceback (most recent call last):
-  File "C:\Users\vishn\AndroidStudioProjects\DynAcuityWeb\serve_proxy.py", line 85, in <module>
-    with socketserver.TCPServer(("0.0.0.0", PORT), UnifiedHandler) as httpd:
-         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\vishn\AppData\Local\Programs\Python\Python312\Lib\socketserver.py", line 457, in __init__
-    self.server_bind()
-  File "C:\Users\vishn\AppData\Local\Programs\Python\Python312\Lib\socketserver.py", line 473, in server_bind
-    self.socket.bind(self.server_address)
-OSError: [WinError 10048] Only one usage of each socket address (protocol/network address/port) is normally permitted

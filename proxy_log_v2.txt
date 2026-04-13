@@ -1,3 +1,0 @@
-Unified Server (Static + API Proxy) at port 3000
-Serving files from: c:\Users\vishn\AndroidStudioProjects\DynAcuityWeb
-Proxying /api/* to: 127.0.0.1:8000

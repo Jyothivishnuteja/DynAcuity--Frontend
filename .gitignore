@@ -18,3 +18,10 @@ yarn-error.log
 *.njsproj
 *.sln
 *.sw?
+
+# Local development proxies, tunnels, and logs
+*.log
+*.txt
+*.bat
+run_everything.py
+serve_proxy.py
