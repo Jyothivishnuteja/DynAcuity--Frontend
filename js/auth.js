@@ -25,7 +25,7 @@ applyGlobalTheme();
 /**
  * Save user session data to localStorage
  */
-function setSession(data) {
+function setSession(data) {    
     localStorage.setItem('dynacuity_token', data.token);
     localStorage.setItem('dynacuity_user', JSON.stringify(data.user));
 }
